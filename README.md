@@ -18,13 +18,15 @@ The web application runs on <http://localhost:3000> and the documentation applic
 
 ## Tasks
 
-| Command            | Description                                  |
-| ------------------ | -------------------------------------------- |
-| `pnpm dev`         | Start all applications in watch mode         |
-| `pnpm build`       | Build all applications and packages          |
-| `pnpm lint`        | Lint all packages                            |
-| `pnpm check-types` | Type-check all packages                      |
-| `pnpm format`      | Format TypeScript and Markdown with Prettier |
+| Command            | Description                          |
+| ------------------ | ------------------------------------ |
+| `pnpm dev`         | Start all applications in watch mode |
+| `pnpm build`       | Build all applications and packages  |
+| `pnpm lint`        | Lint all packages with Oxlint        |
+| `pnpm check-types` | Type-check all packages              |
+| `pnpm format`      | Format all files with Oxfmt          |
+
+Lint, formatting, tests, and type checking use Vite+ (`vp lint`, `vp fmt`, `vp test`, `vp check`). Turborepo remains the task runner; `vp run` does not read `turbo.json`.
 
 Run a task for one package with a filter:
 
@@ -37,10 +39,9 @@ pnpm turbo build --filter=web
 - `apps/web`: Next.js application on port 3000
 - `apps/docs`: Next.js documentation application on port 3001
 - `packages/ui`: shared React components (`@repo/ui`)
-- `packages/eslint-config`: shared ESLint configuration (`@repo/eslint-config`)
 - `packages/typescript-config`: shared TypeScript configuration (`@repo/typescript-config`)
+- `vite.config.ts`: shared Vite+ lint, format, and test configuration
 
 ## Caching
 
 Turborepo stores local task results in `.turbo`. An unchanged second build reports `FULL TURBO`. Remote caching is not configured.
-# app
