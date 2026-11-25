@@ -8,6 +8,7 @@
     "lint": "turbo run lint",
     "format": "vp fmt",
     "check-types": "turbo run check-types",
+    "test": "turbo run test",
     "check": "ultracite check",
     "fix": "ultracite fix"
   },

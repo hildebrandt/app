@@ -7,6 +7,7 @@
     "dev": "vp dev --port 3000",
     "build": "vp build",
     "start": "node start.mjs",
+    "test": "vp test run",
     "lint": "vp lint --max-warnings 0",
     "check-types": "tsc --noEmit"
   },
@@ -24,8 +25,10 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@vitejs/plugin-react": "6.3.0",
+    "fast-check": "^4.11.0",
     "srvx": "1.0.8",
     "typescript": "7.0.2",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

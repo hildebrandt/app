@@ -81,6 +81,6 @@ export default defineConfig({
   fmt: formatConfig,
   lint: lintConfig,
   test: {
-    passWithNoTests: true,
+    passWithNoTests: false,
   },
 });

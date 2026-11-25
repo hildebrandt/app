@@ -24,6 +24,7 @@ The web application runs on <http://localhost:3000> and the documentation applic
 | `pnpm build`       | Build all applications and packages  |
 | `pnpm lint`        | Lint all packages with Oxlint        |
 | `pnpm check-types` | Type-check all packages              |
+| `pnpm test`        | Run all test suites with Vitest      |
 | `pnpm format`      | Format all files with Oxfmt          |
 
 Lint, formatting, tests, and type checking use Vite+ (`vp lint`, `vp fmt`, `vp test`, `vp check`). Turborepo remains the task runner; `vp run` does not read `turbo.json`.

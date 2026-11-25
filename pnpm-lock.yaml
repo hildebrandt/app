@@ -22,7 +22,7 @@ importers:
     devDependencies:
       '@interfere/landmines':
         specifier: ^0.3.1
-        version: 0.3.1(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))
+        version: 0.3.1(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))
       '@shadcn/lint':
         specifier: ^0.2.5
         version: 0.2.5(@typescript-eslint/parser@8.74.0(eslint@10.15.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.15.0(jiti@2.7.0))
@@ -40,10 +40,10 @@ importers:
         version: 0.5.4(eslint@10.15.0(jiti@2.7.0))(typescript@7.0.2)
       oxfmt:
         specifier: ^0.79.0
-        version: 0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
+        version: 0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
       oxlint:
         specifier: ^1.94.0
-        version: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
+        version: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
       oxlint-plugin-react-doctor:
         specifier: ^0.9.23
         version: 0.9.23
@@ -58,10 +58,10 @@ importers:
         version: 7.0.2
       ultracite:
         specifier: 8.3.1
-        version: 8.3.1(eslint@10.15.0(jiti@2.7.0))(oxfmt@0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(prettier@3.10.1)
+        version: 8.3.1(eslint@10.15.0(jiti@2.7.0))(oxfmt@0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(prettier@3.10.1)
       vite-plus:
         specifier: 'catalog:'
-        version: 1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)
+        version: 1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)
 
   apps/docs:
     dependencies:
@@ -145,6 +145,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: 6.3.0
         version: 6.3.0(@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))
+      fast-check:
+        specifier: ^4.11.0
+        version: 4.11.0
       srvx:
         specifier: 1.0.8
         version: 1.0.8
@@ -154,6 +157,9 @@ importers:
       vite:
         specifier: 'catalog:'
         version: '@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)'
+      vite-plus:
+        specifier: 'catalog:'
+        version: 1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)
 
   packages/typescript-config: {}
 
@@ -2287,6 +2293,10 @@ packages:
   exsolve@1.2.0:
     resolution: {integrity: sha512-h1pQPR9XoeSMdntRNCjyTznaume4UpfXrULBnlkZ2CUM/G5eSa+pBByGldO5uR8dxbPC+OuJXsPPNf+JZ81ADg==}
 
+  fast-check@4.11.0:
+    resolution: {integrity: sha512-V4Uc238rhQOdQlc+Gz7JG6SGBtrWnWL8d/6RyiBeCMcNKMhF6DZ0KkAVHJSyNV5r4lA0PmIpZ6iRpTVoz4qjoA==}
+    engines: {node: '>=12.17.0'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -3046,6 +3056,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pure-rand@8.4.2:
+    resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
 
   qified@0.10.1:
     resolution: {integrity: sha512-+Owyggi9IxT1ePKGafcI87ubSmxol6smwJ+RAHDQlx9+9cPwFWDiKFFCPuWhr9ignlGpZ9vDQLw67N4dcTVFEA==}
@@ -3894,14 +3907,14 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@interfere/landmines@0.3.1(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))':
+  '@interfere/landmines@0.3.1(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))':
     dependencies:
       '@babel/parser': 8.0.4
       '@babel/types': 8.0.4
       '@oxlint/plugins': 1.81.0
       jsonc-parser: 3.3.1
       oxc-resolver: 11.24.2
-      oxlint: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
+      oxlint: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
       zod: 4.6.6
 
   '@isaacs/nonrecursive-glob-match@1.1.0': {}
@@ -5670,6 +5683,10 @@ snapshots:
 
   exsolve@1.2.0: {}
 
+  fast-check@4.11.0:
+    dependencies:
+      pure-rand: 8.4.2
+
   fast-deep-equal@3.1.3: {}
 
   fast-diff@1.3.0: {}
@@ -6339,6 +6356,31 @@ snapshots:
       '@oxfmt/binding-win32-x64-msvc': 0.79.0
       vite-plus: 1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)
 
+  oxfmt@0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)):
+    dependencies:
+      tinypool: 2.2.0
+    optionalDependencies:
+      '@oxfmt/binding-android-arm-eabi': 0.79.0
+      '@oxfmt/binding-android-arm64': 0.79.0
+      '@oxfmt/binding-darwin-arm64': 0.79.0
+      '@oxfmt/binding-darwin-x64': 0.79.0
+      '@oxfmt/binding-freebsd-x64': 0.79.0
+      '@oxfmt/binding-linux-arm-gnueabihf': 0.79.0
+      '@oxfmt/binding-linux-arm-musleabihf': 0.79.0
+      '@oxfmt/binding-linux-arm64-gnu': 0.79.0
+      '@oxfmt/binding-linux-arm64-musl': 0.79.0
+      '@oxfmt/binding-linux-ppc64-gnu': 0.79.0
+      '@oxfmt/binding-linux-riscv64-gnu': 0.79.0
+      '@oxfmt/binding-linux-riscv64-musl': 0.79.0
+      '@oxfmt/binding-linux-s390x-gnu': 0.79.0
+      '@oxfmt/binding-linux-x64-gnu': 0.79.0
+      '@oxfmt/binding-linux-x64-musl': 0.79.0
+      '@oxfmt/binding-openharmony-arm64': 0.79.0
+      '@oxfmt/binding-win32-arm64-msvc': 0.79.0
+      '@oxfmt/binding-win32-ia32-msvc': 0.79.0
+      '@oxfmt/binding-win32-x64-msvc': 0.79.0
+      vite-plus: 1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)
+
   oxlint-plugin-react-doctor@0.9.23:
     dependencies:
       '@shaderfrog/glsl-parser': 7.0.1
@@ -6380,6 +6422,30 @@ snapshots:
       '@oxlint/binding-win32-x64-msvc': 1.94.0
       oxlint-tsgolint: 7.0.2008
       vite-plus: 1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)
+
+  oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)):
+    optionalDependencies:
+      '@oxlint/binding-android-arm-eabi': 1.94.0
+      '@oxlint/binding-android-arm64': 1.94.0
+      '@oxlint/binding-darwin-arm64': 1.94.0
+      '@oxlint/binding-darwin-x64': 1.94.0
+      '@oxlint/binding-freebsd-x64': 1.94.0
+      '@oxlint/binding-linux-arm-gnueabihf': 1.94.0
+      '@oxlint/binding-linux-arm-musleabihf': 1.94.0
+      '@oxlint/binding-linux-arm64-gnu': 1.94.0
+      '@oxlint/binding-linux-arm64-musl': 1.94.0
+      '@oxlint/binding-linux-ppc64-gnu': 1.94.0
+      '@oxlint/binding-linux-riscv64-gnu': 1.94.0
+      '@oxlint/binding-linux-riscv64-musl': 1.94.0
+      '@oxlint/binding-linux-s390x-gnu': 1.94.0
+      '@oxlint/binding-linux-x64-gnu': 1.94.0
+      '@oxlint/binding-linux-x64-musl': 1.94.0
+      '@oxlint/binding-openharmony-arm64': 1.94.0
+      '@oxlint/binding-win32-arm64-msvc': 1.94.0
+      '@oxlint/binding-win32-ia32-msvc': 1.94.0
+      '@oxlint/binding-win32-x64-msvc': 1.94.0
+      oxlint-tsgolint: 7.0.2008
+      vite-plus: 1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)
 
   p-limit@3.1.0:
     dependencies:
@@ -6452,6 +6518,8 @@ snapshots:
       parse-ms: 4.0.0
 
   punycode@2.3.1: {}
+
+  pure-rand@8.4.2: {}
 
   qified@0.10.1:
     dependencies:
@@ -6863,7 +6931,7 @@ snapshots:
 
   ufo@1.6.4: {}
 
-  ultracite@8.3.1(eslint@10.15.0(jiti@2.7.0))(oxfmt@0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(prettier@3.10.1):
+  ultracite@8.3.1(eslint@10.15.0(jiti@2.7.0))(oxfmt@0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(oxlint@1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1)))(prettier@3.10.1):
     dependencies:
       '@clack/prompts': 1.9.0
       cli-truncate: 6.2.0
@@ -6886,8 +6954,8 @@ snapshots:
       zod: 4.6.7
     optionalDependencies:
       eslint: 10.15.0(jiti@2.7.0)
-      oxfmt: 0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
-      oxlint: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
+      oxfmt: 0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
+      oxlint: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
       prettier: 3.10.1
 
   unbox-primitive@1.1.0:
@@ -6938,6 +7006,68 @@ snapshots:
       '@vitest/utils': 5.1.1
       oxfmt: 0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
       oxlint: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1(vitest@5.1.1))(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
+      tsrs: 7.1.0-beta.tsrs4
+      vite: '@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)'
+      vitest: 5.1.1(@types/node@26.4.1)(@vitest/browser-preview@5.1.1)(@vitest/ui@5.1.1(vitest@5.1.1))(@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))
+    optionalDependencies:
+      '@voidzero-dev/vite-plus-darwin-arm64': 1.8.0
+      '@voidzero-dev/vite-plus-darwin-x64': 1.8.0
+      '@voidzero-dev/vite-plus-linux-arm64-gnu': 1.8.0
+      '@voidzero-dev/vite-plus-linux-arm64-musl': 1.8.0
+      '@voidzero-dev/vite-plus-linux-x64-gnu': 1.8.0
+      '@voidzero-dev/vite-plus-linux-x64-musl': 1.8.0
+      '@voidzero-dev/vite-plus-win32-arm64-msvc': 1.8.0
+      '@voidzero-dev/vite-plus-win32-x64-msvc': 1.8.0
+    transitivePeerDependencies:
+      - '@arethetypeswrong/core'
+      - '@astrojs/compiler-rs'
+      - '@edge-runtime/vm'
+      - '@opentelemetry/api'
+      - '@types/node'
+      - '@typescript/native-preview'
+      - '@vitejs/devtools'
+      - '@vitest/coverage-istanbul'
+      - '@vitest/coverage-v8'
+      - '@vitest/ui'
+      - '@volar/typescript'
+      - '@vue/language-core'
+      - bufferutil
+      - esbuild
+      - happy-dom
+      - jiti
+      - jsdom
+      - less
+      - msw
+      - oxlint-tsgolint
+      - publint
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - svelte
+      - terser
+      - tsx
+      - typescript
+      - unplugin-unused
+      - unrun
+      - utf-8-validate
+      - vue-tsc
+      - yaml
+
+  vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1):
+    dependencies:
+      '@oxc-project/runtime': 0.159.0
+      '@oxc-project/types': 0.159.0
+      '@oxlint/plugins': 1.94.0
+      '@vitest/browser': 5.1.1(@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(vitest@5.1.1)
+      '@vitest/browser-preview': 5.1.1(@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(vitest@5.1.1)
+      '@vitest/mocker': 5.1.1(@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))
+      '@vitest/pretty-format': 5.1.1
+      '@vitest/snapshot': 5.1.1
+      '@vitest/spy': 5.1.1
+      '@vitest/utils': 5.1.1
+      oxfmt: 0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
+      oxlint: 1.94.0(oxlint-tsgolint@7.0.2008)(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(oxlint-tsgolint@7.0.2008)(typescript@7.0.2)(yaml@2.9.1))
       tsrs: 7.1.0-beta.tsrs4
       vite: '@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)'
       vitest: 5.1.1(@types/node@26.4.1)(@vitest/browser-preview@5.1.1)(@vitest/ui@5.1.1(vitest@5.1.1))(@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))

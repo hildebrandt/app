@@ -7,4 +7,8 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [tanstackStart(), viteReact()],
+  test: {
+    allowOnly: false,
+    passWithNoTests: false,
+  },
 });

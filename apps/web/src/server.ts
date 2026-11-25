@@ -11,7 +11,15 @@ const staticHandler =
     ? staticMiddleware({ dir: "dist/client", maxAge: 0 })
     : null;
 
-const setHeader = (response: Response, name: string, value: string) => {
+/**
+ * Sets a header on a response.
+ *
+ * @param response - Response to update.
+ * @param name - Header name.
+ * @param value - Header value.
+ * @returns The same response when headers are mutable; otherwise a new response with the same status, status text, body, and headers plus the new header.
+ */
+export const setHeader = (response: Response, name: string, value: string) => {
   try {
     response.headers.set(name, value);
 
