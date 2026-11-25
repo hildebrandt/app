@@ -95,7 +95,7 @@ const Home = () => {
                 href="https://ui-sdk.dev"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="ui-sdk docs"
+                aria-label="UI SDK docs"
               />
             }
           >

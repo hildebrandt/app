@@ -5,6 +5,7 @@ import {
 import { staticMiddleware } from "srvx/static";
 
 const startHandler = createStartHandler(defaultStreamHandler);
+
 const staticHandler =
   process.env.NODE_ENV === "production"
     ? staticMiddleware({ dir: "dist/client", maxAge: 0 })
@@ -13,10 +14,13 @@ const staticHandler =
 const setHeader = (response: Response, name: string, value: string) => {
   try {
     response.headers.set(name, value);
+
     return response;
   } catch {
     const headers = new Headers(response.headers);
+
     headers.set(name, value);
+
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -31,8 +35,10 @@ const serveStatic = async (request: Request) => {
   }
 
   let nextCalled = false;
+
   const response = await staticHandler(request, () => {
     nextCalled = true;
+
     return new Response(null);
   });
 
@@ -41,6 +47,7 @@ const serveStatic = async (request: Request) => {
   }
 
   const { pathname } = new URL(request.url);
+
   setHeader(
     response,
     "cache-control",
@@ -48,9 +55,11 @@ const serveStatic = async (request: Request) => {
       ? "public, max-age=0, must-revalidate"
       : "public, max-age=0"
   );
+
   if (pathname === "/favicon.ico") {
     setHeader(response, "content-type", "image/x-icon");
   }
+
   return response;
 };
 
@@ -60,13 +69,17 @@ export default {
 
     if (url.pathname !== "/" && url.pathname.endsWith("/")) {
       let path = url.pathname;
+
       while (path.endsWith("/")) {
         path = path.slice(0, -1);
       }
+
       while (path.startsWith("/")) {
         path = path.slice(1);
       }
+
       const destination = `/${path}${url.search}`;
+
       return new Response(new TextEncoder().encode(destination), {
         status: 308,
         headers: {
@@ -77,11 +90,13 @@ export default {
     }
 
     const staticResponse = await serveStatic(request);
+
     if (staticResponse) {
       return staticResponse;
     }
 
     const response = await startHandler(request);
+
     return setHeader(
       response,
       "cache-control",

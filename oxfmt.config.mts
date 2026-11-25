@@ -1,4 +1,3 @@
-// Presets: ultracite/oxfmt (assembled in vite.config.ts).
 import viteConfig from "./vite.config.ts";
 
 const { fmt } = viteConfig;
