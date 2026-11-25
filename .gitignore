@@ -15,6 +15,12 @@ node_modules
 # Testing
 coverage
 
+# Mutation reports
+apps/*/reports/
+
+# Mutation sandbox
+.stryker-tmp/
+
 # Turbo
 .turbo
 

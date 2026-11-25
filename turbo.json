@@ -15,7 +15,12 @@
       "dependsOn": ["^check-types"]
     },
     "test": {
+      "dependsOn": ["build"],
       "outputs": []
+    },
+    "mutation": {
+      "dependsOn": ["build"],
+      "cache": false
     },
     "dev": {
       "cache": false,

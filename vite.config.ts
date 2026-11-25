@@ -33,6 +33,17 @@ const configOverrides: OxlintConfig["overrides"] = [
     files: ["**/start.mjs"],
     rules: { "landmines/no-comments": "off" },
   },
+  {
+    files: ["**/.pnpmfile.mjs"],
+    rules: {
+      "github/filenames-match-regex": "off",
+      "landmines/no-comments": "off",
+    },
+  },
+  {
+    files: ["**/*.test.tsx"],
+    rules: { "landmines/no-comments": "off" },
+  },
 ];
 
 const formatConfig = defineOxfmtConfig({

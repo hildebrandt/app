@@ -8,6 +8,7 @@
     "build": "vp build",
     "start": "node start.mjs",
     "test": "vp test run",
+    "mutation": "stryker run",
     "lint": "vp lint --max-warnings 0",
     "check-types": "tsc --noEmit"
   },
@@ -21,14 +22,20 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/typescript-checker": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
+    "@testing-library/react": "16.3.3",
     "@types/node": "26.4.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@vitejs/plugin-react": "6.3.0",
     "fast-check": "^4.11.0",
+    "jsdom": "31.0.1",
     "srvx": "1.0.8",
     "typescript": "7.0.2",
     "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "5.1.1"
   }
 }

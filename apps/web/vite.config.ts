@@ -8,6 +8,7 @@ export default defineConfig({
   },
   plugins: [tanstackStart(), viteReact()],
   test: {
+    include: ["src/**/*.test.{ts,tsx}", "start.test.tsx"],
     allowOnly: false,
     passWithNoTests: false,
   },

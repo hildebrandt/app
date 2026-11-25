@@ -10,7 +10,7 @@ interface ThemeImageProps {
   alt: string;
   width: number;
   height: number;
-  priority?: boolean;
+  priority: boolean;
 }
 
 const ThemeImage = ({
@@ -19,7 +19,7 @@ const ThemeImage = ({
   alt,
   width,
   height,
-  priority = false,
+  priority,
 }: ThemeImageProps) => (
   <>
     <img

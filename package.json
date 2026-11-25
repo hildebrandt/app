@@ -9,6 +9,7 @@
     "format": "vp fmt",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
+    "mutation": "turbo run mutation",
     "check": "ultracite check",
     "fix": "ultracite fix"
   },
