@@ -1,4 +1,3 @@
-import { Button } from "@repo/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
 import { Button as UiSdkButton } from "@ui-sdk/react/button";
 import styles from "../styles/page.module.css";
@@ -112,9 +111,12 @@ function Home() {
             ui-sdk docs
           </UiSdkButton>
         </div>
-        <Button appName="web" className={styles.secondary}>
+        <UiSdkButton
+          className={styles.secondary}
+          onClick={() => alert("Hello from your web app!")}
+        >
           Open alert
-        </Button>
+        </UiSdkButton>
       </main>
       <footer className={styles.footer}>
         <a

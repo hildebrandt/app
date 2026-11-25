@@ -1,4 +1,4 @@
-import { Button } from "@repo/ui/button";
+import { Button } from "@ui-sdk/react/button";
 import { createFileRoute } from "@tanstack/react-router";
 import styles from "../styles/page.module.css";
 
@@ -97,7 +97,10 @@ function Home() {
             Read our docs
           </a>
         </div>
-        <Button appName="docs" className={styles.secondary}>
+        <Button
+          className={styles.secondary}
+          onClick={() => alert("Hello from your docs app!")}
+        >
           Open alert
         </Button>
       </main>

@@ -32,15 +32,18 @@ importers:
 
   apps/docs:
     dependencies:
-      '@repo/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@tanstack/react-router':
         specifier: 1.170.46
         version: 1.170.46(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@tanstack/react-start':
         specifier: 1.169.7
         version: 1.169.7(@types/react@19.2.18)(@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@ui-sdk/core':
+        specifier: 0.1.0-beta.17
+        version: 0.1.0-beta.17
+      '@ui-sdk/react':
+        specifier: 0.1.0-beta.17
+        version: 0.1.0-beta.17(@types/react@19.2.18)(@ui-sdk/core@0.1.0-beta.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -75,9 +78,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@repo/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@tanstack/react-router':
         specifier: 1.170.46
         version: 1.170.46(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -123,31 +123,6 @@ importers:
         version: '@voidzero-dev/vite-plus-core@8.3.8001(@types/node@26.4.1)(jiti@2.7.0)(typescript@7.0.2)'
 
   packages/typescript-config: {}
-
-  packages/ui:
-    dependencies:
-      react:
-        specifier: 19.2.8
-        version: 19.2.8
-      react-dom:
-        specifier: 19.2.8
-        version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: 26.4.1
-        version: 26.4.1
-      '@types/react':
-        specifier: 19.2.18
-        version: 19.2.18
-      '@types/react-dom':
-        specifier: 19.2.5
-        version: 19.2.5(@types/react@19.2.18)
-      typescript:
-        specifier: 7.0.2
-        version: 7.0.2
 
 packages:
 

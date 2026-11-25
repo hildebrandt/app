@@ -38,9 +38,10 @@ pnpm turbo build --filter=web
 
 - `apps/web`: TanStack Start application on port 3000
 - `apps/docs`: TanStack Start documentation application on port 3001
-- `packages/ui`: shared React components (`@repo/ui`)
 - `packages/typescript-config`: shared TypeScript configuration (`@repo/typescript-config`)
 - `vite.config.ts`: shared Vite+ lint, format, and test configuration
+
+Both applications render shared UI through `@ui-sdk/react`; the repository has no local UI package.
 
 ## Caching
 

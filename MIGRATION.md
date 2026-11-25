@@ -104,3 +104,14 @@ pnpm lint
 ```
 
 All four commands must pass on Node.js 24 with pnpm 11.25.0. A fresh clone of the migration head passed all four commands and every parity check, including exact redirect headers and body.
+
+## Follow-up: ui-sdk consolidation
+
+Date: 2026-11-25
+
+`packages/ui` was removed and both applications now render through `@ui-sdk/react`:
+
+- `apps/web` and `apps/docs` import `Button` from `@ui-sdk/react/button` and keep the `styles.secondary` class name.
+- The alert handlers moved to each call site: `Hello from your web app!` and `Hello from your docs app!`.
+- `Card` and `Code` had no importers and were deleted. `Card` also carried a hardcoded `utm_source=create-turbo&utm_medium=basic&utm_campaign=create-turbo` query string; that behavior no longer exists.
+- `apps/docs` added `@ui-sdk/core` and `@ui-sdk/react` at `0.1.0-beta.17`, matching `apps/web`.
