@@ -14,6 +14,20 @@
       "sourceType": "github",
       "skillPath": "skills/turborepo/SKILL.md",
       "computedHash": "49bb6427015253ce5d93f15dfa6c9ade3f8528f0fbe54769b6da1e1458f058d4"
+    },
+    "ui-sdk": {
+      "source": "vercel-labs/ui",
+      "commit": "d5c6249e1a0b1df47334d3012180bfba9b9374ec",
+      "sourceType": "github",
+      "skillPath": "packages/core/skills/ui-sdk/SKILL.md",
+      "computedHash": "1af8b09475fd1c8784489c4c1099eb167e28297c344e1102fb017ca07ce74d00"
+    },
+    "ultracite": {
+      "source": "haydenbleasel/ultracite",
+      "commit": "f5c8af0411ddb96114780f5f768d2abd6bd22f7e",
+      "sourceType": "github",
+      "skillPath": "skills/ultracite/SKILL.md",
+      "computedHash": "52eac7a3ac5f3117d8d70f1058eed56403e9755fc93e0ba944c4c501fa560ba6"
     }
   }
 }
