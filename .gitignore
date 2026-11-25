@@ -35,3 +35,8 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
+.idea
+*.iws
+out/
