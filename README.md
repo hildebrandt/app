@@ -46,7 +46,3 @@ Both applications render shared UI through `@ui-sdk/react`; the repository has n
 ## Caching
 
 Turborepo stores local task results in `.turbo`. An unchanged second build reports `FULL TURBO`. Remote caching is not configured.
-
-## Migration
-
-The Next.js to TanStack Start migration, parity evidence, and revert point are documented in [MIGRATION.md](./MIGRATION.md).

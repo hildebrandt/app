@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Button as UiSdkButton } from "@ui-sdk/react/button";
+import { Button } from "@ui-sdk/react/button";
 import { useState } from "react";
 
 import styles from "../styles/page.module.css";
@@ -88,7 +88,7 @@ const Home = () => {
           >
             Read our docs
           </a>
-          <UiSdkButton
+          <Button
             className={styles.secondary}
             render={
               <a
@@ -100,16 +100,16 @@ const Home = () => {
             }
           >
             ui-sdk docs
-          </UiSdkButton>
+          </Button>
         </div>
-        <UiSdkButton
+        <Button
           className={styles.secondary}
           onClick={() => {
             setMessage("Hello from your web app!");
           }}
         >
           Show message
-        </UiSdkButton>
+        </Button>
         {message.length > 0 ? <output>{message}</output> : null}
       </main>
       <footer className={styles.footer}>
