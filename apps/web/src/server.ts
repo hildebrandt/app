@@ -55,10 +55,14 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname !== "/" && url.pathname.endsWith("/")) {
-      const location = `${url.pathname.replace(/\/+$/, "")}${url.search}`;
-      return new Response(null, {
+      const path = url.pathname.replace(/\/+$/, "").replace(/^\/+/, "");
+      const destination = `/${path}${url.search}`;
+      return new Response(new TextEncoder().encode(destination), {
         status: 308,
-        headers: { location },
+        headers: {
+          location: destination,
+          refresh: `0;url=${destination}`,
+        },
       });
     }
 

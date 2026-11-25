@@ -19,7 +19,7 @@ The migration ran on Node.js 24.22.3 with pnpm 11.25.0. Installed versions are `
 
 The baseline was captured from a clean worktree of commit `3f5cb2f` before any migration change. `next build` and `next start` ran for both applications on ports 3000 and 3001. The capture recorded:
 
-- Status, headers, redirects, and body size for `/`, `/_not-found`, `/does-not-exist`, and `/does-not-exist/`.
+- Status, headers, redirect `location` and `refresh` values, redirect body bytes, and body size for `/`, `/_not-found`, `/does-not-exist`, and `/does-not-exist/`.
 - Content type, cache headers, and SHA-256 for every file in `public/`.
 - Document title, description, language, icon, body text, computed font families and sizes, layout rectangles, links, images, loaded fonts, and screenshots in desktop light, desktop dark, and mobile light.
 - The 404 page in desktop light.
@@ -45,7 +45,7 @@ Each application had four `next/*` imports:
 - Added `apps/*/start.mjs`, which starts `srvx` with the server bundle. Static files are served from `dist/client` by `src/server.ts`, with the baseline cache and content-type headers.
 - Moved fonts and the favicon into `public/`, and reproduced the Next.js font faces and fallback metrics in `src/styles/globals.css`.
 - Reimplemented the 404 route to match the Next.js status, markup, and cache headers.
-- Kept the `/does-not-exist/` to `/does-not-exist` 308 redirect in `src/server.ts`.
+- Kept the `/does-not-exist/` to `/does-not-exist` 308 redirect in `src/server.ts`, including the baseline `refresh` header and 15-byte destination body.
 - Removed `next`, `next-env.d.ts`, `next.config.js`, the `app/` directories, and the unused `nextjs.json` TypeScript preset.
 - Removed the Next.js lint plugin override and the Next.js ignore entries.
 - Changed Turborepo build outputs from `.next/**` to `dist/**`.
@@ -60,7 +60,7 @@ Both applications were built, started on their production ports, and captured wi
 | `/` status and headers               | match                                  | match                                  |
 | `/_not-found` status and headers     | match                                  | match                                  |
 | `/does-not-exist` status and headers | match                                  | match                                  |
-| `/does-not-exist/` 308 redirect      | match                                  | match                                  |
+| `/does-not-exist/` 308 redirect      | match: location, refresh, body         | match: location, refresh, body         |
 | `public/` asset bytes and headers    | match                                  | match                                  |
 | Title, description, language, icon   | match                                  | match                                  |
 | Fonts, computed styles, layout       | match                                  | match                                  |
@@ -70,7 +70,9 @@ Both applications were built, started on their production ports, and captured wi
 
 The home page copy was updated from the removed Next.js path to the new TanStack route path. This is the only intentional visual difference. The 404 page does not render a second document title because React hoists it and changes `document.title`; the visible title and metadata match the baseline.
 
-Framework asset URLs and script tags differ because TanStack Start emits its own bundles. The public asset contract, HTML metadata, status codes, redirects, cache headers, and rendered output are preserved.
+The `/does-not-exist/` response matches the Next.js baseline exactly: status 308, `location: /does-not-exist`, `refresh: 0;url=/does-not-exist`, and the 15-byte body `/does-not-exist` with SHA-256 `b3bd3241f76fec06db8f0d6ba5c273d522dc61dd25d9a02265a23b1e34d67989`. The redirect destination is normalized to one leading slash.
+
+Framework asset URLs and script tags differ because TanStack Start emits its own bundles. The public asset contract, HTML metadata, status codes, redirect headers and body, cache headers, and rendered output are preserved.
 
 ## Unpreserved behavior
 
@@ -101,4 +103,4 @@ pnpm check-types
 pnpm lint
 ```
 
-All four commands must pass on Node.js 24 with pnpm 11.25.0. A fresh clone of commit `6fdcb41` passed all four commands and every parity check.
+All four commands must pass on Node.js 24 with pnpm 11.25.0. A fresh clone of the migration head passed all four commands and every parity check, including exact redirect headers and body.
