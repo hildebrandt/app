@@ -72,6 +72,13 @@ The home page copy was updated from the removed Next.js path to the new TanStack
 
 Framework asset URLs and script tags differ because TanStack Start emits its own bundles. The public asset contract, HTML metadata, status codes, redirects, cache headers, and rendered output are preserved.
 
+## Unpreserved behavior
+
+- Next.js sent `x-nextjs-*`, `x-powered-by`, `vary`, and framework `etag` headers. TanStack Start does not. Status, content type, cache control, and redirect headers match the baseline.
+- Next.js statically prerendered `/` and `/_not-found`. TanStack Start renders them per request because this migration uses SSR. The baseline cache control is preserved.
+- Next.js bundle URLs, script tags, and generated body classes differ because TanStack Start emits its own client assets.
+- The Next.js image optimizer is not used. The page contains static SVG images, which render at the same size and position.
+
 ## Revert
 
 Tag `pre-tanstack-migration` points to commit `3f5cb2f`, the last working Next.js version. To restore it:
@@ -88,10 +95,10 @@ Then run `next build` and `next start` in `apps/web` and `apps/docs`. The tag is
 The migration was verified with:
 
 ```sh
-pnpm install --no-frozen-lockfile
+pnpm install
 pnpm build
 pnpm check-types
 pnpm lint
 ```
 
-All four commands must pass on Node.js 24 with pnpm 11.25.0. A fresh-clone run of these commands is the release gate.
+All four commands must pass on Node.js 24 with pnpm 11.25.0. A fresh clone of commit `6fdcb41` passed all four commands and every parity check.
