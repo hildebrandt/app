@@ -1,0 +1,45 @@
+# app
+
+Turborepo monorepo for the web and documentation applications, managed with pnpm.
+
+## Requirements
+
+- Node.js >= 24
+- pnpm 11.25.0, declared by `packageManager`
+
+## Setup
+
+```sh
+pnpm install
+pnpm dev
+```
+
+The web application runs on <http://localhost:3000> and the documentation application runs on <http://localhost:3001>.
+
+## Tasks
+
+| Command            | Description                                  |
+| ------------------ | -------------------------------------------- |
+| `pnpm dev`         | Start all applications in watch mode         |
+| `pnpm build`       | Build all applications and packages          |
+| `pnpm lint`        | Lint all packages                            |
+| `pnpm check-types` | Type-check all packages                      |
+| `pnpm format`      | Format TypeScript and Markdown with Prettier |
+
+Run a task for one package with a filter:
+
+```sh
+pnpm turbo build --filter=web
+```
+
+## Layout
+
+- `apps/web`: Next.js application on port 3000
+- `apps/docs`: Next.js documentation application on port 3001
+- `packages/ui`: shared React components (`@repo/ui`)
+- `packages/eslint-config`: shared ESLint configuration (`@repo/eslint-config`)
+- `packages/typescript-config`: shared TypeScript configuration (`@repo/typescript-config`)
+
+## Caching
+
+Turborepo stores local task results in `.turbo`. An unchanged second build reports `FULL TURBO`. Remote caching is not configured.
