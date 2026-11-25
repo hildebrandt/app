@@ -10,7 +10,7 @@ const staticHandler =
     ? staticMiddleware({ dir: "dist/client", maxAge: 0 })
     : null;
 
-function setHeader(response: Response, name: string, value: string) {
+const setHeader = (response: Response, name: string, value: string) => {
   try {
     response.headers.set(name, value);
     return response;
@@ -23,10 +23,12 @@ function setHeader(response: Response, name: string, value: string) {
       headers,
     });
   }
-}
+};
 
-async function serveStatic(request: Request) {
-  if (!staticHandler) return null;
+const serveStatic = async (request: Request) => {
+  if (!staticHandler) {
+    return null;
+  }
 
   let nextCalled = false;
   const response = await staticHandler(request, () => {
@@ -34,7 +36,9 @@ async function serveStatic(request: Request) {
     return new Response(null);
   });
 
-  if (nextCalled) return null;
+  if (nextCalled) {
+    return null;
+  }
 
   const { pathname } = new URL(request.url);
   setHeader(
@@ -42,20 +46,26 @@ async function serveStatic(request: Request) {
     "cache-control",
     pathname === "/favicon.ico"
       ? "public, max-age=0, must-revalidate"
-      : "public, max-age=0",
+      : "public, max-age=0"
   );
   if (pathname === "/favicon.ico") {
     setHeader(response, "content-type", "image/x-icon");
   }
   return response;
-}
+};
 
 export default {
   async fetch(request: Request) {
     const url = new URL(request.url);
 
     if (url.pathname !== "/" && url.pathname.endsWith("/")) {
-      const path = url.pathname.replace(/\/+$/, "").replace(/^\/+/, "");
+      let path = url.pathname;
+      while (path.endsWith("/")) {
+        path = path.slice(0, -1);
+      }
+      while (path.startsWith("/")) {
+        path = path.slice(1);
+      }
       const destination = `/${path}${url.search}`;
       return new Response(new TextEncoder().encode(destination), {
         status: 308,
@@ -67,7 +77,9 @@ export default {
     }
 
     const staticResponse = await serveStatic(request);
-    if (staticResponse) return staticResponse;
+    if (staticResponse) {
+      return staticResponse;
+    }
 
     const response = await startHandler(request);
     return setHeader(
@@ -75,7 +87,7 @@ export default {
       "cache-control",
       response.status === 404 && url.pathname !== "/_not-found"
         ? "private, no-cache, no-store, max-age=0, must-revalidate"
-        : "s-maxage=31536000",
+        : "s-maxage=31536000"
     );
   },
 };
