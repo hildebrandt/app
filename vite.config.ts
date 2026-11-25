@@ -14,19 +14,11 @@ export default defineConfig({
       "react/rules-of-hooks": "error",
       "react/exhaustive-deps": "warn",
     },
-    overrides: [
-      {
-        files: ["apps/web/**", "apps/docs/**"],
-        plugins: ["nextjs"],
-      },
-    ],
     ignorePatterns: [
-      "**/.next/**",
       "**/out/**",
       "**/build/**",
       "**/dist/**",
       "**/coverage/**",
-      "**/next-env.d.ts",
     ],
     jsPlugins: [
       {

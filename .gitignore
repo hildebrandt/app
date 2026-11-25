@@ -22,8 +22,7 @@ coverage
 .vercel
 
 # Build Outputs
-.next/
-out/
+.tanstack/
 build
 dist
 

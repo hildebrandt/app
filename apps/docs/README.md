@@ -1,6 +1,6 @@
 # docs
 
-Next.js documentation application in the Turborepo.
+TanStack Start documentation application in the Turborepo.
 
 ## Run
 

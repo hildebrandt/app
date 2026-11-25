@@ -36,8 +36,8 @@ pnpm turbo build --filter=web
 
 ## Layout
 
-- `apps/web`: Next.js application on port 3000
-- `apps/docs`: Next.js documentation application on port 3001
+- `apps/web`: TanStack Start application on port 3000
+- `apps/docs`: TanStack Start documentation application on port 3001
 - `packages/ui`: shared React components (`@repo/ui`)
 - `packages/typescript-config`: shared TypeScript configuration (`@repo/typescript-config`)
 - `vite.config.ts`: shared Vite+ lint, format, and test configuration
@@ -45,3 +45,7 @@ pnpm turbo build --filter=web
 ## Caching
 
 Turborepo stores local task results in `.turbo`. An unchanged second build reports `FULL TURBO`. Remote caching is not configured.
+
+## Migration
+
+The Next.js to TanStack Start migration, parity evidence, and revert point are documented in [MIGRATION.md](./MIGRATION.md).

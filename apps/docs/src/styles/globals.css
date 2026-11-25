@@ -1,0 +1,83 @@
+@font-face {
+  font-family: geistSans;
+  src: url("/fonts/GeistVF.woff") format("woff");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "geistSans Fallback";
+  src: local(Arial);
+  ascent-override: 85.83%;
+  descent-override: 20.52%;
+  line-gap-override: 9.33%;
+  size-adjust: 107.19%;
+}
+
+@font-face {
+  font-family: geistMono;
+  src: url("/fonts/GeistMonoVF.woff") format("woff");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "geistMono Fallback";
+  src: local(Arial);
+  ascent-override: 69.97%;
+  descent-override: 16.73%;
+  line-gap-override: 7.61%;
+  size-adjust: 131.49%;
+}
+
+:root {
+  --font-geist-sans: "geistSans", "geistSans Fallback";
+  --font-geist-mono: "geistMono", "geistMono Fallback";
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.imgDark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+
+  .imgLight {
+    display: none;
+  }
+
+  .imgDark {
+    display: unset;
+  }
+}

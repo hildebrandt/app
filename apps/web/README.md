@@ -1,6 +1,6 @@
 # web
 
-Next.js application in the Turborepo.
+TanStack Start application in the Turborepo.
 
 ## Run
 
