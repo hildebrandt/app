@@ -92,6 +92,24 @@ export default defineConfig({
   fmt: formatConfig,
   lint: lintConfig,
   test: {
-    passWithNoTests: false,
+    projects: ["apps/*"],
+    coverage: {
+      enabled: true,
+      provider: "v8",
+      reporter: ["text", "html", "json", "json-summary"],
+      reportsDirectory: "coverage",
+      include: ["apps/*/src/**/*.{ts,tsx}", "apps/*/start.mjs"],
+      exclude: [
+        "apps/*/src/routeTree.gen.ts",
+        "apps/*/src/route-tree.fixture.ts",
+      ],
+      reportOnFailure: true,
+      thresholds: {
+        branches: 87.71,
+        functions: 100,
+        lines: 100,
+        statements: 100,
+      },
+    },
   },
 });

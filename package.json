@@ -9,6 +9,8 @@
     "format": "vp fmt",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
+    "test:coverage": "turbo run test && turbo run coverage",
+    "coverage": "node scripts/merge-coverage.mjs && vp test run --mergeReports coverage/blob-merged --coverage",
     "mutation": "turbo run mutation",
     "check": "ultracite check",
     "fix": "ultracite fix"
@@ -16,6 +18,7 @@
   "devDependencies": {
     "@interfere/landmines": "^0.3.1",
     "@shadcn/lint": "^0.2.5",
+    "@vitest/coverage-v8": "5.1.1",
     "eslint-plugin-github": "^6.1.2",
     "eslint-plugin-jsdoc": "^65.5.4",
     "eslint-plugin-sonarjs": "^4.2.2",
