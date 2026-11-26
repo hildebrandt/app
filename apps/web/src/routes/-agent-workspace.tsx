@@ -65,14 +65,6 @@ export const AgentWorkspace = () => {
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
-        <div className={styles.profile}>
-          <span aria-hidden="true" className={styles.avatar}>
-            CM
-          </span>
-          <span className={styles.profileName}>Code Match GmbH</span>
-          <Icon name="chevron-down" size={14} />
-        </div>
-
         <nav aria-label="Workspace" className={styles.nav}>
           {NAV_ITEMS.map(({ icon, label }) => {
             const isCurrent = label === "Agent";
@@ -109,6 +101,14 @@ export const AgentWorkspace = () => {
             </Button>
           </section>
         ) : null}
+
+        <div className={styles.profile}>
+          <span aria-hidden="true" className={styles.avatar}>
+            CM
+          </span>
+          <span className={styles.profileName}>Code Match GmbH</span>
+          <Icon name="chevron-down" size={14} />
+        </div>
       </aside>
 
       <main className={styles.mainColumn}>
@@ -134,7 +134,7 @@ export const AgentWorkspace = () => {
                     aria-label="Ask Agent"
                     className={styles.textarea}
                     onValueChange={setDraft}
-                    placeholder="Ask Agent..."
+                    placeholder="Ask agent.."
                     readOnly={!hydrated}
                     ref={inputRef}
                     rows={2}
