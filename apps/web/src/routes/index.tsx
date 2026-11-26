@@ -10,7 +10,6 @@ interface ThemeImageProps {
   alt: string;
   width: number;
   height: number;
-  priority: boolean;
 }
 
 const ThemeImage = ({
@@ -19,7 +18,6 @@ const ThemeImage = ({
   alt,
   width,
   height,
-  priority,
 }: ThemeImageProps) => (
   <>
     <img
@@ -28,8 +26,8 @@ const ThemeImage = ({
       alt={alt}
       width={width}
       height={height}
-      loading={priority ? "eager" : "lazy"}
-      fetchPriority={priority ? "high" : "auto"}
+      loading="eager"
+      fetchPriority="high"
     />
     <img
       src={srcDark}
@@ -37,8 +35,8 @@ const ThemeImage = ({
       alt={alt}
       width={width}
       height={height}
-      loading={priority ? "eager" : "lazy"}
-      fetchPriority={priority ? "high" : "auto"}
+      loading="eager"
+      fetchPriority="high"
     />
   </>
 );
@@ -55,7 +53,6 @@ const Home = () => {
           alt="Turborepo logo"
           width={180}
           height={38}
-          priority
         />
         <ol>
           <li>
