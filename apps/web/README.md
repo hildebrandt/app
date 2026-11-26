@@ -1,6 +1,8 @@
 # web
 
-TanStack Start application in the Turborepo.
+The home page is an Agent workspace. Select an example to start an editable
+draft. The workspace follows the system color scheme. Sending prompts requires
+a backend and is not available in this app.
 
 ## Run
 
