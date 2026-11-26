@@ -35,12 +35,12 @@
 }
 
 .main ol {
-  font-family: var(--font-geist-mono);
+  font-family: var(--font-text);
   padding-left: 0;
   margin: 0;
   font-size: 14px;
-  line-height: 24px;
-  letter-spacing: -0.01em;
+  line-height: 1.5;
+  letter-spacing: 0;
   list-style-position: inside;
 }
 
@@ -49,11 +49,12 @@
 }
 
 .main code {
-  font-family: inherit;
+  font-family: var(--font-mono);
   background: var(--gray-alpha-100);
   padding: 2px 4px;
   border-radius: 4px;
-  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0;
 }
 
 .ctas {
@@ -66,7 +67,7 @@
   border-radius: 128px;
   height: 48px;
   padding: 0 20px;
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-text);
   border: 1px solid transparent;
   transition:
     background 0.2s,
@@ -76,9 +77,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 1.2;
   font-weight: 500;
+  letter-spacing: 0;
 }
 
 a.primary {
@@ -97,7 +99,7 @@ button.secondary {
   border-radius: 128px;
   height: 48px;
   padding: 0 20px;
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-text);
   border: 1px solid transparent;
   transition:
     background 0.2s,
@@ -107,16 +109,20 @@ button.secondary {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 1.2;
   font-weight: 500;
+  letter-spacing: 0;
   background: transparent;
   border-color: var(--gray-alpha-200);
   min-width: 180px;
 }
 
 .footer {
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-text);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0;
   grid-row-start: 3;
   display: flex;
   gap: 24px;
@@ -169,7 +175,6 @@ button.secondary {
   }
 
   .ctas a {
-    font-size: 14px;
     height: 40px;
     padding: 0 16px;
   }

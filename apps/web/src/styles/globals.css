@@ -1,36 +1,56 @@
+/* Typography — .agents/DESIGN.md */
+
+/* Display family: Manrope */
 @font-face {
-  font-family: geistSans;
-  src: url("/fonts/GeistVF.woff") format("woff");
+  font-family: "Manrope";
+  src: url("/fonts/ManropeVariable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+/* Text family: Inter */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/InterVariable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "geistSans Fallback";
-  src: local(Arial);
-  ascent-override: 85.83%;
-  descent-override: 20.52%;
-  line-gap-override: 9.33%;
-  size-adjust: 107.19%;
+  font-family: "Inter";
+  src: url("/fonts/InterVariable-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
 }
 
+/* Mono family: Geist Mono */
 @font-face {
-  font-family: geistMono;
-  src: url("/fonts/GeistMonoVF.woff") format("woff");
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMonoVariable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "geistMono Fallback";
-  src: local(Arial);
-  ascent-override: 69.97%;
-  descent-override: 16.73%;
-  line-gap-override: 7.61%;
-  size-adjust: 131.49%;
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMonoVariable-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
 }
 
 :root {
-  --font-geist-sans: "geistSans", "geistSans Fallback";
-  --font-geist-mono: "geistMono", "geistMono Fallback";
+  --font-display:
+    "Manrope", "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto,
+    sans-serif;
+  --font-text:
+    "Inter", "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto,
+    sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -49,8 +69,45 @@ body {
 }
 
 body {
+  font-family: var(--font-text);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.05px;
   color: var(--foreground);
   background: var(--background);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 80px;
+  line-height: 1.05;
+  letter-spacing: -3px;
+}
+
+h2 {
+  font-size: 40px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+h3 {
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 36px;
+    letter-spacing: -1.35px;
+  }
 }
 
 * {

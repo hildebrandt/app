@@ -55,16 +55,16 @@ describe("root route", () => {
       links: [
         {
           rel: "preload",
-          href: "/fonts/GeistMonoVF.woff",
+          href: "/fonts/InterVariable.woff2",
           as: "font",
-          type: "font/woff",
+          type: "font/woff2",
           crossOrigin: "anonymous",
         },
         {
           rel: "preload",
-          href: "/fonts/GeistVF.woff",
+          href: "/fonts/GeistMonoVariable.woff2",
           as: "font",
-          type: "font/woff",
+          type: "font/woff2",
           crossOrigin: "anonymous",
         },
         { rel: "stylesheet", href: appCss },
