@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": [
+    "//"
+  ],
+  "tasks": {
+    "dev": {
+      "passThroughEnv": [
+        "BACKEND_PORT",
+        "LLM_API_KEY"
+      ]
+    }
+  }
+}

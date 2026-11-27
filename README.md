@@ -1,6 +1,6 @@
 # app
 
-Turborepo monorepo for the web, documentation, and backend applications, managed with pnpm.
+Turborepo monorepo for the web and backend applications, managed with pnpm.
 
 ## Requirements
 
@@ -14,7 +14,13 @@ pnpm install
 pnpm dev
 ```
 
-The web application runs on <http://localhost:3000>, the documentation application on <http://localhost:3001>, and the backend on <http://127.0.0.1:3002>.
+The web application runs on <http://localhost:3000> and the backend runs on <http://127.0.0.1:3001>.
+
+Set `LLM_API_KEY` in the shell that runs `pnpm dev` to enable chat. Turborepo passes it only to the backend dev task.
+
+To use a different backend port, set `BACKEND_PORT` and the matching `CHAT_BACKEND_URL` before running `pnpm dev`.
+
+Run `pnpm --filter backend build` and then `pnpm --filter backend start` to start the backend from its production build.
 
 ## Tasks
 
@@ -30,7 +36,7 @@ The web application runs on <http://localhost:3000>, the documentation applicati
 | `pnpm mutation`    | Run the Stryker mutation gate        |
 | `pnpm format`      | Format all files with Oxfmt          |
 
-Lint, formatting, tests, and type checking use Vite+ (`vp lint`, `vp fmt`, `vp test`, `vp check`). Turborepo remains the task runner; `vp run` does not read `turbo.json`.
+Lint, formatting, and tests use Vite+ (`vp lint`, `vp fmt`, `vp test`). Application type checks use `tsc --noEmit`. Turborepo runs the workspace tasks; `vp run` does not read `turbo.json`.
 
 Per-app `test` tasks are cacheable and write JUnit, JSON, and blob reports under `reports/test/` and `coverage/`. The root `vite.config.ts` defines Vitest Projects for local runs, and `vitest.shared.ts` holds the reporter, output, and per-app coverage settings. `turbo run coverage` merges the app blobs into one report and enforces the root threshold.
 
@@ -42,19 +48,18 @@ pnpm turbo build --filter=web
 
 ## Mutation testing
 
-`pnpm mutation` runs the Stryker gate for all three applications, including each `start.mjs`. It runs the full configured scope without path filtering. Reports are written to `apps/*/reports/mutation/`; see `MUTATION.md` for thresholds and toolchain details.
+`pnpm mutation` runs the Stryker gate for both applications, including each `start.mjs`. It runs the full configured scope without path filtering. Reports are written to `apps/*/reports/mutation/`; see `MUTATION.md` for thresholds and toolchain details.
 
 ## Layout
 
 - `apps/web`: TanStack Start application on port 3000
-- `apps/docs`: TanStack Start documentation application on port 3001
-- `apps/backend`: Node.js chat API on port 3002
+- `apps/backend`: Node.js chat API on port 3001
 - `packages/typescript-config`: shared TypeScript configuration (`@repo/typescript-config`)
 - `vite.config.ts`: root Vite+ lint, format, and Vitest Projects/coverage configuration
 - `vitest.shared.ts`: shared per-app test reporters, output files, and coverage collection
-- `packages/e2e-web`, `packages/e2e-docs`: Playwright suites for the web and docs apps
+- `packages/e2e-web`: Playwright suite for the web application
 
-The web and documentation applications render shared UI through `@ui-sdk/react`; the repository has no local UI package.
+The web application uses `@ui-sdk/react`; the repository has no local UI package.
 
 ## Caching
 

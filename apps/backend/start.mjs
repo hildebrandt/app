@@ -4,7 +4,7 @@ import { serve } from "srvx";
 
 const CHAT_PATH = "/api/chat";
 const HOSTNAME = "127.0.0.1";
-const DEFAULT_PORT = 3002;
+const DEFAULT_PORT = 3001;
 
 // oxlint-disable-next-line sonarjs/no-clear-text-protocols -- Provider transport is a fixed LAN HTTP endpoint that must stay unchanged.
 const PROVIDER_BASE_URL = "http://192.168.10.2:30129/v1";
@@ -298,6 +298,6 @@ export const startServer = (options = {}) =>
     fetch: createChatHandler(options),
   });
 
-if (import.meta.main) {
+if (process.argv[1] === import.meta.filename) {
   startServer();
 }

@@ -92,7 +92,7 @@ const proxyChat = async (request: Request) => {
   try {
     const target = new URL(
       "/api/chat",
-      process.env.CHAT_BACKEND_URL ?? "http://127.0.0.1:3002"
+      process.env.CHAT_BACKEND_URL ?? "http://127.0.0.1:3001"
     );
     const options = {
       body: request.body,

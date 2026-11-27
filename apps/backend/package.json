@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch start.mjs",
-    "start": "node start.mjs",
+    "build": "vp build",
+    "start": "node dist/start.mjs",
     "test": "vp test run",
     "mutation": "stryker run",
-    "lint": "vp lint --max-warnings 0"
+    "lint": "vp lint --max-warnings 0",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@tanstack/ai": "^1.8.0",
@@ -16,8 +18,12 @@
     "srvx": "1.0.8"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
     "@stryker-mutator/core": "10.1.1",
     "@stryker-mutator/vitest-runner": "10.1.1",
+    "@types/node": "26.4.1",
+    "fast-check": "^4.11.0",
+    "typescript": "7.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "5.1.1"

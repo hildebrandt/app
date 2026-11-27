@@ -92,7 +92,7 @@ export default defineConfig({
   fmt: formatConfig,
   lint: lintConfig,
   test: {
-    projects: ["apps/*"],
+    projects: ["apps/*/vite.config.ts"],
     coverage: {
       enabled: true,
       provider: "v8",

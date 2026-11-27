@@ -9,7 +9,7 @@
     "break": 100
   },
   "mutate": ["start.mjs"],
-  "ignorePatterns": ["/coverage"],
+  "ignorePatterns": ["/coverage", "/dist"],
   "reporters": ["clear-text", "progress", "json", "html"],
   "jsonReporter": {
     "fileName": "reports/mutation/mutation.json"

@@ -4,11 +4,12 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 
 import { EventType } from "@tanstack/ai";
+import { assert as assertProperty, asyncProperty, string } from "fast-check";
 import { describe, expect, it } from "vite-plus/test";
 
 import { createChatHandler, startServer } from "./start.mjs";
 
-const CHAT_URL = "http://127.0.0.1:3002/api/chat";
+const CHAT_URL = "http://127.0.0.1:3001/api/chat";
 const FAILURE = "Chat is unavailable. Try again.";
 
 const conversation = {
@@ -112,6 +113,39 @@ describe("Backend chat", () => {
       { type: "RUN_STARTED" },
       { type: "RUN_FINISHED" },
     ]);
+  });
+
+  it("drops overlong run IDs without rejecting the chat", async () => {
+    await assertProperty(
+      asyncProperty(
+        string({ minLength: 257, maxLength: 300 }),
+        async (runId) => {
+          /** @type {(string | undefined)[]} */
+          const forwardedIds = [];
+
+          const handler = createChatHandler({
+            createStream: (input) => {
+              forwardedIds.push(input.runId);
+
+              return stream(started, finished);
+            },
+          });
+
+          const response = await handler(
+            chatRequest({ ...conversation, runId })
+          );
+
+          expect(response.status).toBe(200);
+          expect(forwardedIds).toStrictEqual([undefined]);
+
+          expect(parseEvents(await response.text())).toMatchObject([
+            { type: "RUN_STARTED" },
+            { type: "RUN_FINISHED" },
+          ]);
+        }
+      ),
+      { seed: 42 }
+    );
   });
 
   it("returns the shared failure before streaming invalid input", async () => {

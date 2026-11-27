@@ -27,14 +27,14 @@ pnpm dev
 
 Open <http://localhost:3000>. The browser sends chat requests to the web app's
 `/api/chat` endpoint. The web server forwards them to the separate backend on
-`127.0.0.1:3002`. The backend calls `http://192.168.10.2:30129/v1` with model
+`127.0.0.1:3001`. The backend calls `http://192.168.10.2:30129/v1` with model
 `default`. Its runtime needs network access to that address.
 
 | Variable | Process | Purpose |
 | --- | --- | --- |
 | `LLM_API_KEY` | Backend | Required provider key. Do not set it in the web app or commit it. |
-| `BACKEND_PORT` | Backend | Optional port. Defaults to `3002`. |
-| `CHAT_BACKEND_URL` | Web server | Optional backend origin. Defaults to `http://127.0.0.1:3002`. Set it if you change the backend port. |
+| `BACKEND_PORT` | Backend | Optional port. Defaults to `3001`. |
+| `CHAT_BACKEND_URL` | Web server | Optional backend origin. Defaults to `http://127.0.0.1:3001`. Set it if you change the backend port. |
 
 The chat endpoint has no user authentication. Keep this setup local unless you
 add access controls at the web deployment boundary.

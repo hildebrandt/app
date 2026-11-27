@@ -1,0 +1,13 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": [
+    "//"
+  ],
+  "tasks": {
+    "dev": {
+      "passThroughEnv": [
+        "CHAT_BACKEND_URL"
+      ]
+    }
+  }
+}
