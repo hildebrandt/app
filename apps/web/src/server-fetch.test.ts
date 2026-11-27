@@ -45,6 +45,7 @@ describe("server fetch routing", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
 
     vi.resetModules();
   });
@@ -57,6 +58,44 @@ describe("server fetch routing", () => {
     if (createdFavicon) {
       await rm(faviconPath, { force: true });
     }
+  });
+
+  it("streams chat from the configured backend without forwarding browser credentials", async () => {
+    const server = await loadServer("test");
+    vi.stubEnv("CHAT_BACKEND_URL", "http://127.0.0.1:4100");
+    const payload = { messages: [{ role: "user", content: "Hello" }] };
+    const event = 'data: {"type":"TEXT_MESSAGE_CONTENT","delta":"Hi"}\n\n';
+    const backendFetch = vi.fn((_url: URL, _options: RequestInit) =>
+      Promise.resolve(
+        new Response(event, { headers: { "content-type": "text/event-stream" } })
+      )
+    );
+    vi.stubGlobal("fetch", backendFetch);
+
+    const response = await server.default.fetch(
+      new Request("http://localhost/api/chat", {
+        body: JSON.stringify(payload),
+        headers: {
+          authorization: "Bearer browser-only",
+          "content-type": "application/json",
+          cookie: "session=browser-only",
+        },
+        method: "POST",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    await expect(response.text()).resolves.toBe(event);
+
+    expect(backendFetch).toHaveBeenCalledTimes(1);
+    const [url, options] = backendFetch.mock.calls[0] ?? [];
+    expect(url?.href).toBe("http://127.0.0.1:4100/api/chat");
+    expect(options?.method).toBe("POST");
+    const headers = new Headers(options?.headers);
+    expect(headers.has("authorization")).toBe(false);
+    expect(headers.has("cookie")).toBe(false);
+    await expect(new Response(options?.body).json()).resolves.toEqual(payload);
   });
 
   it("redirects a directory request and preserves the query string", async () => {

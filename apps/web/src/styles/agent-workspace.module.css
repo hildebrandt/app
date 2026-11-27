@@ -28,6 +28,7 @@
   --aw-accent: #5e6ad2;
   --aw-on-accent: #ffffff;
   --aw-focus: #5e6ad2;
+  --aw-error: #b42318;
   --aw-ease: 140ms ease-in-out;
 
   display: flex;
@@ -75,6 +76,7 @@
     --aw-accent: #5e6ad2;
     --aw-on-accent: #ffffff;
     --aw-focus: #828fff;
+    --aw-error: #ff9a92;
 
     color-scheme: dark;
     background: var(--aw-canvas);
@@ -317,6 +319,57 @@
   max-width: 686px;
 }
 
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background: var(--aw-card);
+  border: 1px solid var(--aw-card-border);
+  border-radius: 10px;
+}
+
+.message[data-role="user"] {
+  align-self: flex-end;
+  max-width: 85%;
+  background: var(--aw-composer);
+  border-color: var(--aw-composer-border);
+}
+
+.messageAuthor {
+  color: var(--aw-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.messageText {
+  margin: 0;
+  color: var(--aw-text);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.chatError {
+  margin: 0;
+  color: var(--aw-error);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .composer {
   display: flex;
   flex: none;
@@ -529,6 +582,12 @@ button.iconButton:hover {
   display: inline-flex;
   gap: 5px;
   align-items: center;
+}
+
+.statusMessage {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .statusClock {

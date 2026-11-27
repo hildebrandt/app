@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch start.mjs",
+    "start": "node start.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@tanstack/ai": "^1.8.0",
+    "@tanstack/ai-openai": "^1.2.0",
+    "srvx": "1.0.8"
+  }
+}

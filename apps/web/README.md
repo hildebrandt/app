@@ -1,12 +1,19 @@
 # web
 
 The home page is an Agent workspace. Select an example to start an editable
-draft. The workspace follows the system color scheme. Sending prompts requires
-a backend and is not available in this app.
+draft, or enter a prompt in **Ask Agent** and select **Submit prompt**. The
+workspace follows the system color scheme.
 
 ## Run
 
-From the repository root:
+From the repository root, set `LLM_API_KEY` in the backend terminal's environment
+and start the backend:
+
+```sh
+pnpm --filter backend dev
+```
+
+In a separate terminal, start the web app:
 
 ```sh
 pnpm --filter web dev
@@ -18,7 +25,19 @@ From this directory:
 pnpm dev
 ```
 
-The application runs on <http://localhost:3000>.
+Open <http://localhost:3000>. The browser sends chat requests to the web app's
+`/api/chat` endpoint. The web server forwards them to the separate backend on
+`127.0.0.1:3002`. The backend calls `http://192.168.10.2:30129/v1` with model
+`default`. Its runtime needs network access to that address.
+
+| Variable | Process | Purpose |
+| --- | --- | --- |
+| `LLM_API_KEY` | Backend | Required provider key. Do not set it in the web app or commit it. |
+| `BACKEND_PORT` | Backend | Optional port. Defaults to `3002`. |
+| `CHAT_BACKEND_URL` | Web server | Optional backend origin. Defaults to `http://127.0.0.1:3002`. Set it if you change the backend port. |
+
+The chat endpoint has no user authentication. Keep this setup local unless you
+add access controls at the web deployment boundary.
 
 ## Build
 
@@ -33,7 +52,8 @@ pnpm --filter web build
 Both connections use the same browser-side tool handlers on the **Ask Agent**
 textarea. The external bridge pairs one local Node process with one browser tab
 over a loopback WebSocket. WebMCP registers the same two tools directly with the
-browser. There is no agent account, backend, API key, or prompt submission.
+browser. Neither connection requires an agent account or provider key, and
+neither can submit prompts.
 
 ### Least privilege
 

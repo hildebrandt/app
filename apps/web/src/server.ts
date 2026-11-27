@@ -71,9 +71,60 @@ const serveStatic = async (request: Request) => {
   return response;
 };
 
+const proxyChat = async (request: Request) => {
+  const headers = { "cache-control": "no-store" };
+
+  if (request.method !== "POST") {
+    return new Response(null, {
+      headers: { ...headers, allow: "POST" },
+      status: 405,
+    });
+  }
+
+  const contentType = request.headers.get("content-type")?.split(";")[0];
+  if (!request.body || contentType?.trim().toLowerCase() !== "application/json") {
+    return new Response(null, { headers, status: 415 });
+  }
+
+  const unavailable = () =>
+    new Response("Chat is unavailable. Try again.", { headers, status: 502 });
+
+  try {
+    const target = new URL(
+      "/api/chat",
+      process.env.CHAT_BACKEND_URL ?? "http://127.0.0.1:3002"
+    );
+    const options = {
+      body: request.body,
+      duplex: "half",
+      headers: { "content-type": "application/json" },
+      method: "POST",
+      redirect: "error",
+      signal: request.signal,
+    } as const;
+    const response = await fetch(target, options);
+    const streamType = response.headers.get("content-type");
+
+    if (!response.ok || !streamType?.startsWith("text/event-stream")) {
+      await response.body?.cancel();
+      return unavailable();
+    }
+
+    return new Response(response.body, {
+      headers: { ...headers, "content-type": streamType },
+    });
+  } catch {
+    return unavailable();
+  }
+};
+
 export default {
   async fetch(request: Request) {
     const url = new URL(request.url);
+
+    if (url.pathname === "/api/chat") {
+      return await proxyChat(request);
+    }
 
     if (url.pathname !== "/" && url.pathname.endsWith("/")) {
       let path = url.pathname;

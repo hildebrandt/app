@@ -1,14 +1,21 @@
+import {
+  fetchServerSentEvents,
+  generateMessageId,
+  useChat,
+} from "@tanstack/ai-react";
 import { useHydrated } from "@tanstack/react-router";
 import { Button } from "@ui-sdk/react/button";
 import { Field } from "@ui-sdk/react/field";
 import { Textarea } from "@ui-sdk/react/textarea";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import styles from "../styles/agent-workspace.module.css";
 
 import { AgentConnections } from "./-agent-connections";
 import { Icon, type IconName } from "./-agent-icon";
 import type { DraftTools } from "./-agent-tools";
+
+const chatConnection = fetchServerSentEvents("/api/chat");
 
 const NAV_ITEMS = [
   { icon: "inbox", label: "Inbox" },
@@ -40,12 +47,38 @@ const EXAMPLES = [
 
 export const AgentWorkspace = () => {
   const hydrated = useHydrated();
+  const [threadId] = useState(() => generateMessageId());
   const [draft, setDraft] = useState("");
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [showExamples, setShowExamples] = useState(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const currentDraft = useRef("");
   const draftTools = useRef<DraftTools | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const { error, isLoading, messages, sendMessage } = useChat({
+    connection: chatConnection,
+    threadId,
+  });
+  const canSend = hydrated && !isLoading && draft.trim() !== "";
+  const chatMessages = messages.flatMap((message) => {
+    if (message.role !== "user" && message.role !== "assistant") {
+      return [];
+    }
+
+    const text = message.parts
+      .map((part) => (part.type === "text" ? part.content : ""))
+      .join("");
+
+    return text === "" ? [] : [{ id: message.id, role: message.role, text }];
+  });
+
+  useEffect(() => {
+    const content = contentRef.current;
+
+    if (content) {
+      content.scrollTop = content.scrollHeight;
+    }
+  }, [isLoading, messages]);
 
   const updateDraft = (value: string, source?: string) => {
     if (value !== currentDraft.current && source !== "agent") {
@@ -62,6 +95,19 @@ export const AgentWorkspace = () => {
   const selectExample = (description: string) => {
     updateDraft(description);
     focusComposer();
+  };
+
+  const submitPrompt = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!canSend) {
+      return;
+    }
+
+    const prompt = draft.trim();
+
+    updateDraft("");
+    void sendMessage(prompt);
   };
 
   const dismissExamples = () => {
@@ -132,14 +178,28 @@ export const AgentWorkspace = () => {
             </span>
           </header>
 
-          <div className={styles.content}>
+          <div className={styles.content} ref={contentRef}>
             <div className={styles.starter}>
+              {chatMessages.length > 0 ? (
+                <ol aria-label="Chat messages" className={styles.transcript}>
+                  {chatMessages.map((message) => (
+                    <li
+                      className={styles.message}
+                      data-role={message.role}
+                      key={message.id}
+                    >
+                      <span className={styles.messageAuthor}>
+                        {message.role === "user" ? "You" : "Agent"}
+                      </span>
+                      <p className={styles.messageText}>{message.text}</p>
+                    </li>
+                  ))}
+                </ol>
+              ) : null}
               <form
                 aria-label="Start a new chat"
                 className={styles.composer}
-                onSubmit={(event) => {
-                  event.preventDefault();
-                }}
+                onSubmit={submitPrompt}
               >
                 <Field className={styles.promptField} name="prompt">
                   <Textarea
@@ -158,10 +218,9 @@ export const AgentWorkspace = () => {
                     <Icon name="plus" size={16} />
                   </span>
                   <Button
-                    aria-description="Sending is not connected."
                     aria-label="Submit prompt"
                     className={styles.submit}
-                    disabled
+                    disabled={!canSend}
                     focusableWhenDisabled
                     type="submit"
                   >
@@ -169,6 +228,13 @@ export const AgentWorkspace = () => {
                   </Button>
                 </div>
               </form>
+
+              {error ? (
+                <p className={styles.chatError} role="alert">
+                  Chat is unavailable. Try again.
+                </p>
+              ) : null}
+
               <AgentConnections
                 control={inputRef}
                 draft={currentDraft}
@@ -222,6 +288,9 @@ export const AgentWorkspace = () => {
           <span className={styles.statusLabel}>
             <Icon name="agent" size={13} />
             <span>Agent</span>
+          </span>
+          <span className={styles.statusMessage} role="status">
+            {isLoading ? "Agent is responding" : ""}
           </span>
           <span className={styles.statusClock}>
             <Icon name="clock" size={14} />
