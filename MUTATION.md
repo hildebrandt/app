@@ -1,3 +1,8 @@
+---
+title: "Stryker Mutation Testing Gate, Baseline, and Verification"
+summary: "Describes the Stryker mutation-testing gate for apps/web and apps/docs: mutated scope, pnpm mutation command, toolchain compatibility shim, baseline scores, survivor disposition, 100% break thresholds, manual gate, and final verification."
+tags: [mutation-testing, stryker, stryker-mutator, mutation-score, mutants, survivors, baseline, thresholds, break-threshold, quality-gate, vitest, typescript, tanstack-start, turbo, pnpm, monorepo, verification, incremental, ci, continuous-integration]
+---
 # Mutation testing
 
 Stryker Mutator measures the test suites for both applications. The gate covers every production source file on every run, including test-only changes. It does not use path filtering or incremental state to decide whether to run.
@@ -26,7 +31,7 @@ Generated reports:
 - `apps/docs/reports/mutation/index.html`
 - `apps/docs/reports/mutation/mutation.json`
 
-`apps/*/reports/` is ignored by Git. This file is the checked-in report because this checkout has no CI configuration and no CI access. The same command is the manual gate and the command used by the pre-push hook.
+`apps/*/reports/` is ignored by Git. This file is the checked-in report because this checkout has no CI configuration and no CI access. The same command is the manual gate.
 
 ## Toolchain and compatibility
 
@@ -109,7 +114,7 @@ Both `stryker.config.json` files set:
 }
 ```
 
-The break threshold is 100 because both suites have a deterministic score and no surviving mutants. Any survivor fails the gate. The runtime budget is 480 seconds, about 1.74 times the observed 276-second combined run. The pre-push hook enforces both the score and the budget with `timeout 480`.
+The break threshold is 100 because both suites have a deterministic score and no surviving mutants. Any survivor fails the gate. `pnpm mutation` has no runtime cap. The previous pre-push hook wrapped the command in `timeout 480`, about 1.74 times the observed 276-second combined run.
 
 `--incremental` is available only as a local rerun cache:
 
@@ -117,15 +122,11 @@ The break threshold is 100 because both suites have a deterministic score and no
 pnpm --filter web exec stryker run --incremental
 ```
 
-It is not part of the `mutation` task, the root script, or the hook, so it cannot decide the gate.
+It is not part of the `mutation` task or the root script, so it cannot decide the gate.
 
-## CI and hook
+## CI and manual gate
 
-The repository has no CI configuration and this environment has no CI access. The blocking gate is therefore a local pre-push hook:
-
-- `.githooks/pre-push` runs `pnpm mutation` under a 480-second `timeout`.
-- Enable it once per clone with `git config core.hooksPath .githooks`.
-- If no hook is installed, run `pnpm mutation` manually before pushing.
+The repository has no CI configuration and this environment has no CI access. Run `pnpm mutation` manually before pushing. The repository no longer has a pre-push hook.
 
 ## Verification
 

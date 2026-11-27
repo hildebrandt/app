@@ -42,7 +42,7 @@ pnpm turbo build --filter=web
 
 ## Mutation testing
 
-`pnpm mutation` runs the Stryker gate for every production source file in both `apps/web` and `apps/docs`, including each `start.mjs` launcher. It always runs the full scope with no path filtering, requires a 100% mutation score, and has a 480-second runtime budget. The pre-push hook runs the same command; enable it with `git config core.hooksPath .githooks`. Reports are written to `apps/*/reports/mutation/`; the checked-in baseline, survivor triage, and compatibility notes are in `MUTATION.md`.
+`pnpm mutation` runs the Stryker gate for every production source file in both `apps/web` and `apps/docs`, including each `start.mjs` launcher. It always runs the full scope with no path filtering and requires a 100% mutation score. Reports are written to `apps/*/reports/mutation/`; the checked-in baseline, survivor triage, and compatibility notes are in `MUTATION.md`.
 
 ## Layout
 
