@@ -35,6 +35,9 @@
       ],
       "outputs": ["coverage/**"]
     },
+    "//#fallow": {
+      "cache": false
+    },
     "e2e": {
       "dependsOn": ["^build", "e2e:install"],
       "env": ["PLAYWRIGHT_BASE_URL"],

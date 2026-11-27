@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "minimumVersion": "3.49.0",
+  // Stryker loads these configs. The web config aliases the generated route tree to the fixture.
+  "supportEntry": [
+    "apps/backend/vitest-mutation.config.ts",
+    "apps/web/vitest-mutation.config.ts",
+    "apps/web/src/route-tree.fixture.ts"
+  ],
+  // Ultracite presets in vite.config.ts pass these packages to Oxlint as JS plugin specifiers.
+  "ignoreDependencies": [
+    "@shadcn/lint",
+    "eslint-plugin-github",
+    "eslint-plugin-jsdoc",
+    "eslint-plugin-sonarjs",
+    "eslint-plugin-tsdoc",
+    "oxlint-plugin-react-doctor"
+  ],
+  "workspaces": {
+    "settings": {
+      "packages/e2e-web": {
+        // Turbo builds web before E2E. Playwright starts it as a process, not an import.
+        "ignoreDependencies": [
+          "web"
+        ]
+      }
+    }
+  }
+}

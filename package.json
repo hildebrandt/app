@@ -11,6 +11,7 @@
     "test": "turbo run test",
     "test:coverage": "turbo run test && turbo run coverage",
     "coverage": "node scripts/merge-coverage.mjs && vp test run --mergeReports coverage/blob-merged --coverage",
+    "fallow": "fallow",
     "mutation": "turbo run mutation",
     "check": "ultracite check",
     "fix": "ultracite fix"
@@ -23,6 +24,7 @@
     "eslint-plugin-jsdoc": "^65.5.4",
     "eslint-plugin-sonarjs": "^4.2.2",
     "eslint-plugin-tsdoc": "^0.5.4",
+    "fallow": "^3.49.0",
     "oxfmt": "^0.79.0",
     "oxlint": "^1.94.0",
     "oxlint-plugin-react-doctor": "^0.9.23",

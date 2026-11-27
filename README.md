@@ -33,12 +33,15 @@ Run `pnpm --filter backend build` and then `pnpm --filter backend start` to star
 | `pnpm test`        | Run all test suites with Vitest      |
 | `pnpm test:coverage` | Run tests and the merged coverage gate |
 | `pnpm turbo run e2e` | Run the Playwright suites           |
+| `pnpm turbo run fallow` | Analyze dead code, duplication, and complexity across the repository |
 | `pnpm mutation`    | Run the Stryker mutation gate        |
 | `pnpm format`      | Format all files with Oxfmt          |
 
 Lint, formatting, and tests use Vite+ (`vp lint`, `vp fmt`, `vp test`). Application type checks use `tsc --noEmit`. Turborepo runs the workspace tasks; `vp run` does not read `turbo.json`.
 
 Per-app `test` tasks are cacheable and write JUnit, JSON, and blob reports under `reports/test/` and `coverage/`. The root `vite.config.ts` defines Vitest Projects for local runs, and `vitest.shared.ts` holds the reporter, output, and per-app coverage settings. `turbo run coverage` merges the app blobs into one report and enforces the root threshold.
+
+Fallow runs once from the workspace root so it can resolve imports across packages. Turborepo does not cache this task; Fallow maintains its own incremental cache. The task exits nonzero when a Fallow check fails.
 
 Run a task for one package with a filter:
 

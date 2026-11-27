@@ -45,6 +45,9 @@ importers:
       eslint-plugin-tsdoc:
         specifier: ^0.5.4
         version: 0.5.4(eslint@10.15.0(jiti@2.7.0))(typescript@7.0.2)
+      fallow:
+        specifier: ^3.49.0
+        version: 3.49.0
       oxfmt:
         specifier: ^0.79.0
         version: 0.79.0(vite-plus@1.8.0(@types/node@26.4.1)(@vitest/coverage-v8@5.1.1)(@vitest/ui@5.1.1)(jiti@2.7.0)(jsdom@31.0.1)(oxlint-tsgolint@7.0.2008)(playwright@1.65.1)(typescript@7.0.2)(yaml@2.9.1))
@@ -609,6 +612,50 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+
+  '@fallow-cli/darwin-arm64@3.49.0':
+    resolution: {integrity: sha512-bvlGj8LyJNyQ1MrOzIVY6cm9i0iM7uouBzaDbmwfCKOefO/Iwr1FWBIh3u9I4+2VtEkfERRmAU1hGK5ubLr/Dw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@fallow-cli/darwin-x64@3.49.0':
+    resolution: {integrity: sha512-4N9AKkDfRYOg+s6CikVzn3mcwlXnOxs9oxyCtptROIbvJaH69XFkVlFAWvRrWFK/q/SnxlP2LpFU+oL6zWIicg==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@fallow-cli/linux-arm64-gnu@3.49.0':
+    resolution: {integrity: sha512-kFBbTNj0ygfwVyQoE7ImqFda0ycH5AfPp2m6icuew4TNQidgfKfdHwyv1jmH5WN9akOMt6zJU+Be8lciUj+SHQ==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@fallow-cli/linux-arm64-musl@3.49.0':
+    resolution: {integrity: sha512-S1ZVyuIMCnGLpsDM0YnXioZgpZmmnVTUgTtSiTXGUBBtsGC2jmnhjUc1f6ens4EZ24aN+emBzwnxG8fYsuCoIw==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@fallow-cli/linux-x64-gnu@3.49.0':
+    resolution: {integrity: sha512-kNGT0oFXVBYe/QYWmn0osq9AHmWlIA/xwwkD3+VWrrtrJ+dAy4PI4piKoq97BN0ZQpBQxF1W1mn0wE2v2nKdKg==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@fallow-cli/linux-x64-musl@3.49.0':
+    resolution: {integrity: sha512-c5SLAx42kfYhBTekagTnl1PmKVAcWHO+uaWZ8xMuS9XoNB3m2i23HMBjEmApaIeX5muJSAOYxcCARfY4NEogMA==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@fallow-cli/win32-arm64-msvc@3.49.0':
+    resolution: {integrity: sha512-u7ac8WvcwKDukATVg+aKc7FW6y4LCu9gJ5goquNwVUkv8ZuQPTWod7gBH9TMhXcKgAKLXbz+lNCYLJ3fq1651Q==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@fallow-cli/win32-x64-msvc@3.49.0':
+    resolution: {integrity: sha512-DtCf5owUdwMMgBAvpe3ChslshbqfxCilgdR2HrAjG/gOTaQnUJkBVE1fCtG/gL4k3Vq0xrCeiW7FgouUA0G2sQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@github/browserslist-config@1.0.0':
     resolution: {integrity: sha512-gIhjdJp/c2beaIWWIlsXdqXVRUz3r2BxBCpfz/F3JXHvSAQ1paMYjLH+maEATtENg+k5eLV7gA+9yPp762ieuw==}
@@ -2874,6 +2921,11 @@ packages:
   exsolve@1.2.0:
     resolution: {integrity: sha512-h1pQPR9XoeSMdntRNCjyTznaume4UpfXrULBnlkZ2CUM/G5eSa+pBByGldO5uR8dxbPC+OuJXsPPNf+JZ81ADg==}
 
+  fallow@3.49.0:
+    resolution: {integrity: sha512-LJ0tmJPo/FGXbqcy2cGeWo00P/JZuXDPl6sqTrhXsau6lMluMyLLKgXScLR0KWlXIsWq3YKZqlUSu6xEWQnp4w==}
+    engines: {node: '>=22'}
+    hasBin: true
+
   fast-check@4.11.0:
     resolution: {integrity: sha512-V4Uc238rhQOdQlc+Gz7JG6SGBtrWnWL8d/6RyiBeCMcNKMhF6DZ0KkAVHJSyNV5r4lA0PmIpZ6iRpTVoz4qjoA==}
     engines: {node: '>=12.17.0'}
@@ -4932,6 +4984,30 @@ snapshots:
       levn: 0.4.1
 
   '@exodus/bytes@1.16.0': {}
+
+  '@fallow-cli/darwin-arm64@3.49.0':
+    optional: true
+
+  '@fallow-cli/darwin-x64@3.49.0':
+    optional: true
+
+  '@fallow-cli/linux-arm64-gnu@3.49.0':
+    optional: true
+
+  '@fallow-cli/linux-arm64-musl@3.49.0':
+    optional: true
+
+  '@fallow-cli/linux-x64-gnu@3.49.0':
+    optional: true
+
+  '@fallow-cli/linux-x64-musl@3.49.0':
+    optional: true
+
+  '@fallow-cli/win32-arm64-msvc@3.49.0':
+    optional: true
+
+  '@fallow-cli/win32-x64-msvc@3.49.0':
+    optional: true
 
   '@github/browserslist-config@1.0.0': {}
 
@@ -7109,6 +7185,19 @@ snapshots:
   expect-type@1.4.0: {}
 
   exsolve@1.2.0: {}
+
+  fallow@3.49.0:
+    dependencies:
+      detect-libc: 2.1.2
+    optionalDependencies:
+      '@fallow-cli/darwin-arm64': 3.49.0
+      '@fallow-cli/darwin-x64': 3.49.0
+      '@fallow-cli/linux-arm64-gnu': 3.49.0
+      '@fallow-cli/linux-arm64-musl': 3.49.0
+      '@fallow-cli/linux-x64-gnu': 3.49.0
+      '@fallow-cli/linux-x64-musl': 3.49.0
+      '@fallow-cli/win32-arm64-msvc': 3.49.0
+      '@fallow-cli/win32-x64-msvc': 3.49.0
 
   fast-check@4.11.0:
     dependencies:
