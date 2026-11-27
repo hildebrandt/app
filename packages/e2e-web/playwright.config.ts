@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+
 import { defineConfig } from "@playwright/test";
 
 const isCI = process.env.CI === "true" || process.env.CI === "1";
@@ -25,9 +27,11 @@ export default defineConfig({
   webServer: hasBaseURL
     ? undefined
     : {
-        command: "node ../../apps/web/start.mjs",
-        reuseExistingServer: !isCI,
-        timeout: 120_000,
-        url: baseURL,
-      },
+      command: "node start.mjs",
+      cwd: fileURLToPath(new URL("../../apps/web", import.meta.url)),
+      env: { PORT: new URL(baseURL).port },
+      reuseExistingServer: !isCI,
+      timeout: 120_000,
+      url: baseURL,
+    },
 });

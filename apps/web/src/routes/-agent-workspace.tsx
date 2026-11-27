@@ -6,7 +6,9 @@ import { useRef, useState } from "react";
 
 import styles from "../styles/agent-workspace.module.css";
 
+import { AgentConnections } from "./-agent-connections";
 import { Icon, type IconName } from "./-agent-icon";
+import type { DraftTools } from "./-agent-tools";
 
 const NAV_ITEMS = [
   { icon: "inbox", label: "Inbox" },
@@ -42,13 +44,23 @@ export const AgentWorkspace = () => {
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [showExamples, setShowExamples] = useState(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const currentDraft = useRef("");
+  const draftTools = useRef<DraftTools | null>(null);
+
+  const updateDraft = (value: string, source?: string) => {
+    if (value !== currentDraft.current && source !== "agent") {
+      draftTools.current?.resetUndo();
+    }
+    currentDraft.current = value;
+    setDraft(value);
+  };
 
   const focusComposer = () => {
     inputRef.current?.focus();
   };
 
   const selectExample = (description: string) => {
-    setDraft(description);
+    updateDraft(description);
     focusComposer();
   };
 
@@ -133,7 +145,7 @@ export const AgentWorkspace = () => {
                   <Textarea
                     aria-label="Ask Agent"
                     className={styles.textarea}
-                    onValueChange={setDraft}
+                    onValueChange={(value, { source }) => updateDraft(value, source)}
                     placeholder="Ask agent.."
                     readOnly={!hydrated}
                     ref={inputRef}
@@ -157,6 +169,12 @@ export const AgentWorkspace = () => {
                   </Button>
                 </div>
               </form>
+              <AgentConnections
+                control={inputRef}
+                draft={currentDraft}
+                hydrated={hydrated}
+                tools={draftTools}
+              />
 
               {showExamples ? (
                 <section className={styles.examples}>

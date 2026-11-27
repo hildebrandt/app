@@ -658,6 +658,65 @@ button.iconButton:hover {
   }
 }
 
+.connections {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--aw-composer-border);
+  border-radius: 8px;
+  background: var(--aw-composer);
+  color: var(--aw-muted);
+  font-size: 13px;
+}
+
+.connections summary {
+  width: fit-content;
+  color: var(--aw-text);
+  cursor: pointer;
+}
+
+.connections p {
+  margin: 6px 0 0;
+}
+
+.connectionGrant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 10px 0;
+}
+
+.bridgeForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.bridgeInput,
+.bridgeButton {
+  padding: 5px 8px;
+  border: 1px solid var(--aw-composer-border);
+  border-radius: 4px;
+  background: var(--aw-workspace-top);
+  color: var(--aw-text);
+  font: inherit;
+}
+
+.bridgeInput {
+  display: block;
+  width: min(340px, 100%);
+}
+
+.bridgeButton {
+  cursor: pointer;
+}
+
+.connections :focus-visible {
+  outline: 2px solid var(--aw-focus);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .shell *,

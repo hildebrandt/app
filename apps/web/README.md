@@ -27,3 +27,97 @@ From the repository root:
 ```sh
 pnpm --filter web build
 ```
+
+## Agent connections
+
+Both connections use the same browser-side tool handlers on the **Ask Agent**
+textarea. The external bridge pairs one local Node process with one browser tab
+over a loopback WebSocket. WebMCP registers the same two tools directly with the
+browser. There is no agent account, backend, API key, or prompt submission.
+
+### Least privilege
+
+| Tool | Arguments | Required permission | Change event | Undo behavior |
+| --- | --- | --- | --- | --- |
+| `set_draft` | `{ "value": "string" }` | **Allow agents to edit the draft** in this tab | `draft.changed` for an applied change | Saves the previous value for one undo. An equivalent value does not replace it. |
+| `undo_draft` | `{}` | The same permission, checked again | `draft.changed` when the previous value is restored | Restores the last agent edit. A manual or example edit clears the undo slot. Undo does not redo or send anything. |
+
+The argument objects reject extra properties. The edit grant starts off and
+applies to both connections. You can revoke it at any time. Listing tools does
+not require the grant and returns only names, descriptions, and schemas.
+Neither connection exposes a tool to read the draft, invoke other controls, or
+submit prompts. A client with the edit grant can infer that a proposed value
+matches the current draft up to newline normalization when `set_draft` returns
+`change: null`.
+
+`set_draft` accepts at most 4,000 Unicode code points in `value`. With the
+grant enabled, both connections answer a tool call that carries an over-limit
+value with the tool-level result `{"ok":false,"error":"invalid_arguments"}`
+and leave the draft unchanged. WebMCP sets `isError` on this result. The
+external bridge applies a separate size cap to each request line and answers
+a larger line with `{"error":"invalid_request","type":"error"}` before any
+tool call. A message over that cap fails before `set_draft` runs. It produces
+no tool result and leaves the draft unchanged.
+
+After it validates the argument, `set_draft` normalizes newlines in `value`:
+CRLF (`\r\n`) and bare CR (`\r`) become LF (`\n`), the line ending the
+textarea uses. The 4,000 code point limit counts `value` as sent, before this
+normalization, so each CRLF counts as two code points. A value that equals the
+current draft after normalization is a no-op: it returns `ok: true` with
+`change: null` and does not replace the undo slot.
+
+An applied change returns `ok: true` with `change` set to
+`{"type":"draft.changed","key":"value","label":"Ask Agent","source":"agent"}`.
+A no-op returns `ok: true` with `change: null`. A valid ungranted call returns
+`{"ok":false,"error":"permission_denied"}` and makes no change. WebMCP also
+sets `isError` on the native tool result. Draft text is not included in results.
+
+### Five-step trial
+
+Use Node.js 24 or newer and pnpm 11.25.0. No account or permission fixture is
+required. Run these steps from the repository root.
+
+1. Run `pnpm install --frozen-lockfile`,
+   `pnpm --filter @repo/e2e-web e2e:install`, then `pnpm --filter web build`.
+   The browser install provides the pinned Chromium. On a Linux host without
+   the Playwright system libraries, run
+   `pnpm --filter @repo/e2e-web exec playwright install --with-deps chromium`.
+2. Run `pnpm --filter @repo/e2e-web e2e agent-connections.test.ts`.
+   Playwright starts the built app on `127.0.0.1:3000`, launches Chromium with
+   `--enable-features=WebMCP`, and invokes the registered tools through the
+   native Chrome DevTools Protocol `WebMCP` domain. It starts the external
+   bridge as a separate Node process. Keep port 3000 free for this run.
+3. For a manual external call, start `pnpm --filter web dev` in one terminal
+   and `node apps/web/scripts/agent-bridge.mjs http://127.0.0.1:3000` in another.
+   Open <http://127.0.0.1:3000>, expand **Agent connections**, and paste the
+   `url` from the `ready` message into **Bridge URL**. Select **Connect bridge**.
+   Treat the URL as a pairing secret. Send one JSON request per line to the
+   bridge process. `{"id":1,"method":"tools/list"}` lists the tools.
+4. Put an initial value into **Ask Agent**. Check **Allow agents to edit the
+   draft** and send
+   `{"id":2,"method":"tools/call","name":"set_draft","arguments":{"value":"Plan a launch"}}`.
+   Check the event and the visible value. Send
+   `{"id":3,"method":"tools/call","name":"undo_draft","arguments":{}}`
+   and check that the initial value returns. In a WebMCP-enabled Chromium
+   client, invoke the same tool names and argument objects. The scenario in
+   step 2 shows how to discover and invoke them through native CDP.
+5. Uncheck the grant and send the exact `set_draft` call again with a new
+   request ID. Check for `permission_denied` and an unchanged textarea. Try
+   the same tool and arguments through WebMCP. Disconnect the bridge when
+   finished. The grant and undo slot are not stored across page loads.
+
+If the app is already running, set
+`PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000` for the command in step 2. The URL
+must match the application origin used by the bridge process.
+
+### SDK compatibility
+
+The app uses the browser `createAgent` and `subscribe` APIs in the installed
+React SDK. Start with `node_modules/@ui-sdk/react/docs/llms.txt` from this
+directory for documentation that matches the installed version. The online
+[WebMCP guide](https://ui-sdk.dev/docs/agents/connect-an-agent/webmcp) and the
+installed guide describe `registerTools`, which publishes the SDK's generic
+`snapshot`, `act`, and `query` tools. This app registers only its two draft
+tools through `document.modelContext.registerTool` to avoid exposing page
+reads and unconstrained actions. A browser without that API can still use the
+external bridge.
