@@ -327,13 +327,6 @@
   background: var(--aw-composer);
   border: 1px solid var(--aw-composer-border);
   border-radius: 10px;
-  transition:
-    border-color var(--aw-ease),
-    background-color var(--aw-ease);
-}
-
-.composer:focus-within {
-  border-color: var(--aw-focus);
 }
 
 .promptField {
@@ -546,8 +539,8 @@ button.iconButton:hover {
   height: 20px;
 }
 
-.shell :is(a, button, textarea, [tabindex]):focus-visible,
-.shell [data-focused] {
+.shell :is(a, button, textarea, [tabindex]):not(.textarea):focus-visible,
+.shell [data-focused]:not(.promptField, .textarea) {
   outline: 2px solid var(--aw-focus);
   outline-offset: 2px;
 }

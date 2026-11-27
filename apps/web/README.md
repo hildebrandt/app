@@ -93,8 +93,8 @@ required. Run these steps from the repository root.
    `url` from the `ready` message into **Bridge URL**. Select **Connect bridge**.
    Treat the URL as a pairing secret. Send one JSON request per line to the
    bridge process. `{"id":1,"method":"tools/list"}` lists the tools.
-4. Put an initial value into **Ask Agent**. Check **Allow agents to edit the
-   draft** and send
+4. Enter a value in the **Ask anything** textbox. Check **Allow agents to edit
+   the draft** and send
    `{"id":2,"method":"tools/call","name":"set_draft","arguments":{"value":"Plan a launch"}}`.
    Check the event and the visible value. Send
    `{"id":3,"method":"tools/call","name":"undo_draft","arguments":{}}`

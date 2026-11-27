@@ -146,7 +146,7 @@ export const AgentWorkspace = () => {
                     aria-label="Ask Agent"
                     className={styles.textarea}
                     onValueChange={(value, { source }) => updateDraft(value, source)}
-                    placeholder="Ask agent.."
+                    placeholder="Ask anything"
                     readOnly={!hydrated}
                     ref={inputRef}
                     rows={2}

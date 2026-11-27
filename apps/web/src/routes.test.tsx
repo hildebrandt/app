@@ -173,7 +173,7 @@ describe("root route", () => {
         '<meta name="description" content="Start a chat with Agent."/>'
       ),
       document: html.includes('<html lang="en"><head>'),
-      home: html.includes('placeholder="Ask agent.."'),
+      home: html.includes('placeholder="Ask anything"'),
       title: html.includes("<title>Agent</title>"),
     }).toStrictEqual({
       body: true,
