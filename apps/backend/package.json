@@ -6,11 +6,20 @@
   "scripts": {
     "dev": "node --watch start.mjs",
     "start": "node start.mjs",
-    "test": "node --test"
+    "test": "vp test run",
+    "mutation": "stryker run",
+    "lint": "vp lint --max-warnings 0"
   },
   "dependencies": {
     "@tanstack/ai": "^1.8.0",
     "@tanstack/ai-openai": "^1.2.0",
     "srvx": "1.0.8"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "5.1.1"
   }
 }

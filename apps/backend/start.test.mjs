@@ -1,165 +1,291 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
-import { createChatHandler, GENERIC_FAILURE_MESSAGE } from './start.mjs';
+/* oxlint-disable landmines/no-comments -- JSDoc supplies types for the Node ESM tests. */
 
-const CHAT_URL = 'http://127.0.0.1:3002/api/chat';
+import assert from "node:assert/strict";
+import { once } from "node:events";
 
-const chatRequest = (payload) =>
+import { EventType } from "@tanstack/ai";
+import { describe, expect, it } from "vite-plus/test";
+
+import { createChatHandler, startServer } from "./start.mjs";
+
+const CHAT_URL = "http://127.0.0.1:3002/api/chat";
+const FAILURE = "Chat is unavailable. Try again.";
+
+const conversation = {
+  threadId: "thread-1",
+  messages: [{ role: "user", content: "Hello" }],
+};
+
+/** @type {import('@tanstack/ai').RunStartedEvent} */
+const started = {
+  type: EventType.RUN_STARTED,
+  threadId: "thread-1",
+  runId: "run-1",
+  timestamp: 1,
+};
+
+/** @type {import('@tanstack/ai').RunFinishedEvent} */
+const finished = {
+  type: EventType.RUN_FINISHED,
+  threadId: "thread-1",
+  runId: "run-1",
+  timestamp: 2,
+};
+
+/** @param {unknown} payload @param {AbortSignal} [signal] */
+const chatRequest = (payload, signal) =>
   new Request(CHAT_URL, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: typeof payload === 'string' ? payload : JSON.stringify(payload),
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+    signal,
   });
 
+/** @type {(text: string) => unknown} */
+const parseJson = JSON.parse;
+
+/** @param {string} text @returns {unknown[]} */
 const parseEvents = (text) =>
   text
-    .split('\n\n')
-    .filter((event) => event.trim().length > 0)
-    .map((event) => JSON.parse(event.split('\n').find((line) => line.startsWith('data: ')).slice(6)));
+    .split("\n")
+    .filter((line) => line.startsWith("data: "))
+    .map((line) => parseJson(line.slice(6)));
 
-const runStarted = { type: 'RUN_STARTED', threadId: 'thread-1', runId: 'run-1', timestamp: 1 };
-const runFinished = { type: 'RUN_FINISHED', threadId: 'thread-1', runId: 'run-1', timestamp: 2 };
+/**
+ * @param {...(import('@tanstack/ai').RunStartedEvent | import('@tanstack/ai').RunFinishedEvent | import('@tanstack/ai').RunErrorEvent)} events Provider events in stream order.
+ * @yields {import('@tanstack/ai').StreamChunk} The next provider event.
+ */
+const stream = async function* stream(...events) {
+  yield* events;
+};
 
-test('forwards only user and assistant text to the provider', async () => {
-  let captured;
-  const handler = createChatHandler({
-    createStream: (input) => {
-      captured = input;
-      return (async function* () {
-        yield runStarted;
-        yield runFinished;
-      })();
-    },
-  });
+describe("Backend chat", () => {
+  it("forwards only user and assistant text to the provider", async () => {
+    /** @type {unknown[]} */
+    const inputs = [];
 
-  const response = await handler(
-    chatRequest({
-      threadId: 'thread-1',
-      runId: 'run-1',
-      messages: [
-        { id: 'u1', role: 'user', content: 'Hello' },
-        { id: 'a1', role: 'assistant', content: 'Hi' },
-        { id: 'a2', role: 'assistant' },
-        { id: 'r1', role: 'reasoning', content: 'private reasoning' },
-        { id: 't1', role: 'tool', toolCallId: 'call-1', content: 'tool output' },
-        { id: 's1', role: 'system', content: 'ignored' },
-      ],
-      tools: [{ name: 'dangerous-tool' }],
-      provider: 'client-provider',
-      model: 'client-model',
-    }),
-  );
+    const handler = createChatHandler({
+      createStream: ({ abortController, ...input }) => {
+        inputs.push({ ...input, aborted: abortController.signal.aborted });
 
-  assert.equal(response.status, 200);
-  assert.equal(response.headers.get('content-type'), 'text/event-stream');
-  assert.deepEqual(captured.messages, [
-    { role: 'user', content: 'Hello' },
-    { role: 'assistant', content: 'Hi' },
-  ]);
-  assert.equal(captured.threadId, 'thread-1');
-  assert.equal(captured.runId, 'run-1');
-  assert.equal(captured.tools, undefined);
-  assert.equal(captured.provider, undefined);
-  assert.equal(captured.model, undefined);
-  assert.deepEqual(
-    parseEvents(await response.text()).map((event) => event.type),
-    ['RUN_STARTED', 'RUN_FINISHED'],
-  );
-});
+        return stream(started, finished);
+      },
+    });
 
-test('returns the shared failure before streaming invalid input', async () => {
-  const handler = createChatHandler({
-    createStream: () => {
-      throw new Error('createStream must not run for invalid input');
-    },
-  });
-
-  const bodies = [
-    '{not json',
-    JSON.stringify({ threadId: 'thread-1', messages: [{ role: 'reasoning', content: 'x' }] }),
-    JSON.stringify({ threadId: '', messages: [{ role: 'user', content: 'x' }] }),
-  ];
-
-  for (const body of bodies) {
-    const response = await handler(chatRequest(body));
-    assert.equal(response.status, 400);
-    assert.equal(await response.text(), GENERIC_FAILURE_MESSAGE);
-  }
-});
-
-test('does not expose setup failures', async () => {
-  const handler = createChatHandler({ apiKey: '' });
-  const response = await handler(
-    chatRequest({ threadId: 'thread-1', messages: [{ role: 'user', content: 'Hello' }] }),
-  );
-
-  assert.equal(response.status, 500);
-  assert.equal(await response.text(), GENERIC_FAILURE_MESSAGE);
-});
-
-test('replaces provider failures with a generic RUN_ERROR', async () => {
-  const secret = 'sk-provider-secret-should-not-leak';
-  const createStreams = [
-    () => (async function* () {
-      yield runStarted;
-      yield {
-        type: 'RUN_ERROR',
-        timestamp: 3,
-        message: secret,
-        code: 'provider_error',
-        error: { message: secret },
-        rawText: secret,
-      };
-    })(),
-    () => (async function* () {
-      yield runStarted;
-      throw new Error(secret);
-    })(),
-  ];
-
-  for (const createStream of createStreams) {
-    const handler = createChatHandler({ createStream });
     const response = await handler(
-      chatRequest({ threadId: 'thread-1', runId: 'run-1', messages: [{ role: 'user', content: 'Hello' }] }),
+      chatRequest({
+        ...conversation,
+        runId: "run-1",
+        messages: [
+          ...conversation.messages,
+          { id: "a1", role: "assistant", content: "Hi" },
+          { role: "assistant" },
+          { role: "assistant", content: "" },
+          { role: "assistant", content: 5 },
+          { role: "reasoning", content: "private reasoning" },
+          { role: "tool", toolCallId: "call-1", content: "tool output" },
+          { role: "system", content: "ignored" },
+          null,
+        ],
+        tools: [{ name: "ignored-tool" }],
+        provider: "client-provider",
+        model: "client-model",
+      })
     );
-    const text = await response.text();
-    const events = parseEvents(text);
-    const error = events.at(-1);
 
-    assert.equal(text.includes(secret), false);
-    assert.equal(events.map((event) => event.type).join(','), 'RUN_STARTED,RUN_ERROR');
-    assert.equal(error.message, GENERIC_FAILURE_MESSAGE);
-    assert.equal(error.runId ?? error.metadata?.tanstack?.runId, 'run-1');
-    assert.equal(error.threadId ?? error.metadata?.tanstack?.threadId, 'thread-1');
-  }
-});
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/event-stream");
 
-test('aborts the provider stream when the response is cancelled', async () => {
-  let providerAbortController;
-  let sourceReturned = false;
+    expect(inputs).toStrictEqual([
+      {
+        threadId: "thread-1",
+        runId: "run-1",
+        messages: [
+          { role: "user", content: "Hello" },
+          { role: "assistant", content: "Hi" },
+        ],
+        aborted: false,
+      },
+    ]);
 
-  const handler = createChatHandler({
-    createStream: ({ abortController }) => {
-      providerAbortController = abortController;
-      return (async function* () {
-        try {
-          yield runStarted;
-          await new Promise((resolve) => abortController.signal.addEventListener('abort', resolve, { once: true }));
-          yield runFinished;
-        } finally {
-          sourceReturned = true;
-        }
-      })();
-    },
+    expect(parseEvents(await response.text())).toMatchObject([
+      { type: "RUN_STARTED" },
+      { type: "RUN_FINISHED" },
+    ]);
   });
 
-  const response = await handler(
-    chatRequest({ threadId: 'thread-1', messages: [{ role: 'user', content: 'Hello' }] }),
-  );
-  const reader = response.body.getReader();
-  await reader.read();
-  await reader.cancel();
+  it("returns the shared failure before streaming invalid input", async () => {
+    const handler = createChatHandler({
+      createStream: () => {
+        throw new Error("createStream must not run for invalid input");
+      },
+    });
 
-  assert.equal(providerAbortController.signal.aborted, true);
-  assert.equal(sourceReturned, true);
+    const requests = [
+      new Request(CHAT_URL, { method: "POST", body: "{not json" }),
+      ...[
+        null,
+        [],
+        { ...conversation, messages: [{ role: "reasoning", content: "x" }] },
+        { ...conversation, threadId: "" },
+        { ...conversation, threadId: 7 },
+        { ...conversation, threadId: "t".repeat(257) },
+        { ...conversation, messages: "Hello" },
+        { ...conversation, messages: [] },
+      ].map((payload) => chatRequest(payload)),
+    ];
+
+    const failures = await Promise.all(
+      requests.map(async (request) => {
+        const response = await handler(request);
+
+        return { status: response.status, body: await response.text() };
+      })
+    );
+
+    expect(failures).toStrictEqual(
+      requests.map(() => ({ status: 400, body: FAILURE }))
+    );
+  });
+
+  it("serves only POST requests to the chat route", async () => {
+    const handler = createChatHandler({ apiKey: "" });
+
+    const missing = await handler(
+      new Request(`${CHAT_URL}/`, { method: "POST" })
+    );
+
+    const method = await handler(new Request(CHAT_URL));
+
+    expect({
+      status: missing.status,
+      body: await missing.text(),
+    }).toStrictEqual({
+      status: 404,
+      body: "Not Found",
+    });
+
+    expect({
+      status: method.status,
+      allow: method.headers.get("allow"),
+      cache: method.headers.get("cache-control"),
+      body: await method.text(),
+    }).toStrictEqual({
+      status: 405,
+      allow: "POST",
+      cache: "no-store",
+      body: FAILURE,
+    });
+  });
+
+  it("does not expose setup failures", async () => {
+    const handler = createChatHandler({ apiKey: "" });
+
+    const response = await handler(chatRequest(conversation));
+
+    expect(response.status).toBe(500);
+
+    await expect(response.text()).resolves.toBe(FAILURE);
+  });
+
+  it("replaces provider failures with a generic RUN_ERROR", async () => {
+    const secret = "provider-secret-should-not-leak";
+
+    const sources = [
+      () =>
+        stream(
+          started,
+          { type: EventType.RUN_ERROR, timestamp: 3, message: secret },
+          finished
+        ),
+      async function* failingStream() {
+        yield started;
+
+        throw new Error(secret);
+      },
+    ];
+
+    const responses = await Promise.all(
+      sources.map(async (createStream) => {
+        const handler = createChatHandler({ createStream });
+
+        const response = await handler(
+          chatRequest({ ...conversation, runId: "run-1" })
+        );
+
+        return await response.text();
+      })
+    );
+
+    for (const body of responses) {
+      expect(body).not.toContain(secret);
+
+      expect(parseEvents(body)).toMatchObject([
+        { type: "RUN_STARTED" },
+        {
+          type: "RUN_ERROR",
+          message: FAILURE,
+          metadata: { tanstack: { threadId: "thread-1", runId: "run-1" } },
+        },
+      ]);
+    }
+  });
+
+  it.each(["response", "request"])(
+    "aborts the provider stream when the %s is cancelled",
+    async (source) => {
+      const requestController = new AbortController();
+      /** @type {AbortSignal[]} */
+      const signals = [];
+      let streamClosed = false;
+
+      const handler = createChatHandler({
+        createStream: async function* createStream({ abortController }) {
+          signals.push(abortController.signal);
+
+          try {
+            yield started;
+
+            if (!abortController.signal.aborted) {
+              await once(abortController.signal, "abort");
+            }
+
+            yield finished;
+          } finally {
+            streamClosed = true;
+          }
+        },
+      });
+
+      const response = await handler(
+        chatRequest(conversation, requestController.signal)
+      );
+
+      assert.ok(response.body);
+
+      const reader = response.body.getReader();
+
+      await reader.read();
+
+      if (source === "request") {
+        requestController.abort("client disconnected");
+      } else {
+        await reader.cancel();
+      }
+
+      await expect(reader.read()).resolves.toMatchObject({ done: true });
+
+      expect(signals).toMatchObject([{ aborted: true }]);
+      expect(streamClosed).toBeTruthy();
+    }
+  );
+
+  it.each([0, -1, 65_536, "not-a-port", 1.5])(
+    "rejects invalid backend port %s",
+    (port) => {
+      expect(() => startServer({ port })).toThrow(
+        "BACKEND_PORT must be an integer from 1 to 65535."
+      );
+    }
+  );
 });

@@ -1,6 +1,6 @@
 # app
 
-Turborepo monorepo for the web and documentation applications, managed with pnpm.
+Turborepo monorepo for the web, documentation, and backend applications, managed with pnpm.
 
 ## Requirements
 
@@ -14,7 +14,7 @@ pnpm install
 pnpm dev
 ```
 
-The web application runs on <http://localhost:3000> and the documentation application runs on <http://localhost:3001>.
+The web application runs on <http://localhost:3000>, the documentation application on <http://localhost:3001>, and the backend on <http://127.0.0.1:3002>.
 
 ## Tasks
 
@@ -42,19 +42,20 @@ pnpm turbo build --filter=web
 
 ## Mutation testing
 
-`pnpm mutation` runs the Stryker gate for every production source file in both `apps/web` and `apps/docs`, including each `start.mjs` launcher. It always runs the full scope with no path filtering and requires a 100% mutation score. Reports are written to `apps/*/reports/mutation/`; the checked-in baseline, survivor triage, and compatibility notes are in `MUTATION.md`.
+`pnpm mutation` runs the Stryker gate for all three applications, including each `start.mjs`. It runs the full configured scope without path filtering. Reports are written to `apps/*/reports/mutation/`; see `MUTATION.md` for thresholds and toolchain details.
 
 ## Layout
 
 - `apps/web`: TanStack Start application on port 3000
 - `apps/docs`: TanStack Start documentation application on port 3001
+- `apps/backend`: Node.js chat API on port 3002
 - `packages/typescript-config`: shared TypeScript configuration (`@repo/typescript-config`)
 - `vite.config.ts`: root Vite+ lint, format, and Vitest Projects/coverage configuration
 - `vitest.shared.ts`: shared per-app test reporters, output files, and coverage collection
 - `packages/e2e-web`, `packages/e2e-docs`: Playwright suites for the web and docs apps
 
-Both applications render shared UI through `@ui-sdk/react`; the repository has no local UI package.
+The web and documentation applications render shared UI through `@ui-sdk/react`; the repository has no local UI package.
 
 ## Caching
 
-Turborepo stores local task results in `.turbo`. An unchanged second `turbo run test` reports `FULL TURBO` and restores test reports, coverage blobs, and merged coverage. Playwright reports and traces are cached per suite. Remote caching is not configured.
+Turborepo stores local task results in `.turbo`. An unchanged second `turbo run test` restores the per-app test reports and coverage blobs. `pnpm test:coverage` runs the separate merge task. Playwright reports and traces are cached per suite. Remote caching is not configured.
