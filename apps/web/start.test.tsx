@@ -82,6 +82,7 @@ describe("launcher", () => {
         throw new Error("Server URL is unavailable");
       }
 
+      expect(new URL(server.url).hostname).toBe("127.0.0.1");
       const response = await fetch(server.url);
 
       expect(response.status).toBe(200);

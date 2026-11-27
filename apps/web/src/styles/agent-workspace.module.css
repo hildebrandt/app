@@ -363,11 +363,79 @@
   white-space: pre-wrap;
 }
 
+.chatFeedback {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .chatError {
   margin: 0;
   color: var(--aw-error);
   font-size: 13px;
   line-height: 1.4;
+}
+
+.draftOutcome {
+  margin: 0;
+  color: var(--aw-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.approvalBackdrop {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+}
+
+.approvalDialog {
+  position: fixed;
+  z-index: 11;
+  inset: 50% auto auto 50%;
+  display: grid;
+  gap: 12px;
+  width: min(420px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 20px;
+  overflow: auto;
+  color: CanvasText;
+  background: Canvas;
+  border: 1px solid GrayText;
+  border-radius: 10px;
+  transform: translate(-50%, -50%);
+}
+
+.approvalDialog :is(h2, p, dl, dd) {
+  margin: 0;
+}
+
+.approvalValues {
+  display: grid;
+  gap: 6px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.approvalValues dt {
+  font-weight: 600;
+}
+
+.approvalValues dd {
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.approvalDialog .chatFeedback {
+  flex-wrap: wrap;
+}
+
+.approvalDialog .bridgeButton {
+  color: CanvasText;
+  background: ButtonFace;
+  border-color: GrayText;
 }
 
 .composer {

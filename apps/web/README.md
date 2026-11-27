@@ -4,6 +4,15 @@ The home page is an Agent workspace. Select an example to start an editable
 draft, or enter a prompt in **Ask Agent** and select **Submit prompt**. The
 workspace follows the system color scheme.
 
+Select **Stop** to cancel a response. The workspace keeps the text already
+received and any draft you entered while the agent was responding. For an
+interrupted text response, **Retry** replaces that answer without submitting a
+second user message or changing the draft.
+
+If an embedded draft action was requested, the workspace does not retry the turn.
+Check the draft before sending another prompt. Stop does not reverse an edit that
+already landed. Use `undo_draft` while its permission and draft still match.
+
 ## Run
 
 From the repository root, set `LLM_API_KEY` in the backend terminal's environment
@@ -35,9 +44,18 @@ Open <http://localhost:3000>. The browser sends chat requests to the web app's
 | `LLM_API_KEY` | Backend | Required provider key. Do not set it in the web app or commit it. |
 | `BACKEND_PORT` | Backend | Optional port. Defaults to `3001`. |
 | `CHAT_BACKEND_URL` | Web server | Optional backend origin. Defaults to `http://127.0.0.1:3001`. Set it if you change the backend port. |
+| `CHAT_OWNER_SECRET` | Web server and backend | Optional shared secret of at least 32 characters. Keep it server-side. Without the same value in both processes, embedded draft actions are unavailable. |
 
-The chat endpoint has no user authentication. Keep this setup local unless you
-add access controls at the web deployment boundary.
+The chat endpoint has no user authentication. The production launcher binds to
+`127.0.0.1`. Do not expose it through a reverse proxy without access controls.
+
+Embedded draft edits require a loopback browser origin, a backend URL with a
+loopback IP address such as `127.0.0.1`, and the shared owner secret.
+Enable **Allow agents to edit the draft** in the current tab. When the model
+requests an edit, review the current and proposed text and
+select **Approve**, **Deny**, or **Stop**. Approval changes the draft but does not
+send it. Revoking the edit grant cancels a pending approval. The external bridge
+and WebMCP still use the standing grant without this per-edit confirmation.
 
 ## Build
 
@@ -46,6 +64,25 @@ From the repository root:
 ```sh
 pnpm --filter web build
 ```
+
+### Verify chat without a provider
+
+After the build, start the disposable pair from the repository root:
+
+```sh
+node packages/e2e-web/e2e/fixtures/chat-pair.mjs
+```
+
+Use the printed `webUrl` as `PLAYWRIGHT_BASE_URL` and `controlUrl` as
+`CHAT_PAIR_CONTROL_URL`. Then run:
+
+```sh
+pnpm --filter @repo/e2e-web e2e agent-chat.test.ts agent-draft-chat.test.ts agent-connections.test.ts --workers=1
+```
+
+The protected draft tests start their own disposable pair with a scripted
+TanStack adapter. Neither pair needs provider credentials. Stop the first pair
+when the tests finish.
 
 ## Agent connections
 
@@ -92,6 +129,10 @@ A no-op returns `ok: true` with `change: null`. A valid ungranted call returns
 `{"ok":false,"error":"permission_denied"}` and makes no change. WebMCP also
 sets `isError` on the native tool result. Draft text is not included in results.
 
+If the bridge disconnects after dispatching a draft edit or Undo but before it
+receives the result, it returns `draft_outcome_unknown`. Inspect the draft before
+retrying. A disconnect does not reverse a change.
+
 ### Five-step trial
 
 Use Node.js 24 or newer and pnpm 11.25.0. No account or permission fixture is
@@ -113,8 +154,8 @@ required. Run these steps from the repository root.
    `url` from the `ready` message into **Bridge URL**. Select **Connect bridge**.
    Treat the URL as a pairing secret. Send one JSON request per line to the
    bridge process. `{"id":1,"method":"tools/list"}` lists the tools.
-4. Enter a value in the **Ask anything** textbox. Check **Allow agents to edit
-   the draft** and send
+4. Enter a value in the **Ask Agent** textbox. Check **Allow agents to edit the
+   draft** and send
    `{"id":2,"method":"tools/call","name":"set_draft","arguments":{"value":"Plan a launch"}}`.
    Check the event and the visible value. Send
    `{"id":3,"method":"tools/call","name":"undo_draft","arguments":{}}`

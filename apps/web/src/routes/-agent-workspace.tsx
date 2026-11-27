@@ -1,9 +1,12 @@
-import {
-  fetchServerSentEvents,
-  generateMessageId,
-  useChat,
-} from "@tanstack/ai-react";
+import { generateMessageId } from "@tanstack/ai-react";
 import { useHydrated } from "@tanstack/react-router";
+import {
+  AlertDialog,
+  AlertDialogBackdrop,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@ui-sdk/react/alert-dialog";
 import { Button } from "@ui-sdk/react/button";
 import { Field } from "@ui-sdk/react/field";
 import { Textarea } from "@ui-sdk/react/textarea";
@@ -14,8 +17,7 @@ import styles from "../styles/agent-workspace.module.css";
 import { AgentConnections } from "./-agent-connections";
 import { Icon, type IconName } from "./-agent-icon";
 import type { DraftTools } from "./-agent-tools";
-
-const chatConnection = fetchServerSentEvents("/api/chat");
+import { useAgentChat } from "./-use-agent-chat";
 
 const NAV_ITEMS = [
   { icon: "inbox", label: "Inbox" },
@@ -45,6 +47,15 @@ const EXAMPLES = [
   icon: IconName;
 }[];
 
+const DRAFT_OUTCOMES = {
+  changed: "Draft changed.",
+  unchanged: "The draft was already set to the proposed text.",
+  denied: "Draft edit denied.",
+  cancelled: "Draft edit cancelled.",
+  unavailable: "Draft edit unavailable. Check the draft and the edit grant.",
+  unknown: "The draft edit outcome is unknown. Inspect the draft before trying again.",
+};
+
 export const AgentWorkspace = () => {
   const hydrated = useHydrated();
   const [threadId] = useState(() => generateMessageId());
@@ -55,11 +66,10 @@ export const AgentWorkspace = () => {
   const currentDraft = useRef("");
   const draftTools = useRef<DraftTools | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { error, isLoading, messages, sendMessage } = useChat({
-    connection: chatConnection,
-    threadId,
-  });
-  const canSend = hydrated && !isLoading && draft.trim() !== "";
+  const chat = useAgentChat(threadId, draftTools);
+  const { approval, actionResult, errorMessage, messages } = chat;
+  const denyRef = useRef<HTMLButtonElement>(null);
+  const canSend = hydrated && !chat.busy && draft.trim() !== "";
   const chatMessages = messages.flatMap((message) => {
     if (message.role !== "user" && message.role !== "assistant") {
       return [];
@@ -78,7 +88,7 @@ export const AgentWorkspace = () => {
     if (content) {
       content.scrollTop = content.scrollHeight;
     }
-  }, [isLoading, messages]);
+  }, [chat.busy, messages]);
 
   const updateDraft = (value: string, source?: string) => {
     if (value !== currentDraft.current && source !== "agent") {
@@ -104,10 +114,20 @@ export const AgentWorkspace = () => {
       return;
     }
 
-    const prompt = draft.trim();
+    if (chat.submit(draft.trim())) {
+      updateDraft("");
+    }
+  };
 
-    updateDraft("");
-    void sendMessage(prompt);
+  const stopResponse = () => {
+    chat.stopResponse();
+    focusComposer();
+  };
+
+  const retryResponse = () => {
+    if (chat.retry?.()) {
+      focusComposer();
+    }
   };
 
   const dismissExamples = () => {
@@ -217,6 +237,11 @@ export const AgentWorkspace = () => {
                   <span aria-hidden="true" className={styles.iconButton}>
                     <Icon name="plus" size={16} />
                   </span>
+                  {chat.responding && !approval ? (
+                    <Button className={styles.bridgeButton} onClick={stopResponse} type="button">
+                      Stop
+                    </Button>
+                  ) : null}
                   <Button
                     aria-label="Submit prompt"
                     className={styles.submit}
@@ -229,11 +254,72 @@ export const AgentWorkspace = () => {
                 </div>
               </form>
 
-              {error ? (
-                <p className={styles.chatError} role="alert">
-                  Chat is unavailable. Try again.
+              {errorMessage ? (
+                <div className={styles.chatFeedback}>
+                  <p className={styles.chatError} role="alert">{errorMessage}</p>
+                  {chat.retry ? (
+                    <Button className={styles.bridgeButton} onClick={retryResponse} type="button">
+                      Retry
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {actionResult ? (
+                <p className={styles.draftOutcome} role="status">
+                  {DRAFT_OUTCOMES[actionResult.outcome]}
                 </p>
               ) : null}
+
+              <AlertDialog
+                open={approval !== null}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    approval?.answer(false);
+                  }
+                }}
+              >
+                <AlertDialogBackdrop className={styles.approvalBackdrop} />
+                <AlertDialogContent
+                  className={styles.approvalDialog}
+                  finalFocus={() => inputRef.current}
+                  initialFocus={() => denyRef.current}
+                >
+                  <AlertDialogTitle>Approve draft edit?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The agent wants to replace the current draft without sending it.
+                  </AlertDialogDescription>
+                  <dl className={styles.approvalValues}>
+                    <dt>Current draft</dt>
+                    <dd>{approval?.previous || "(empty)"}</dd>
+                    <dt>Proposed draft</dt>
+                    <dd>{approval?.value || "(empty)"}</dd>
+                  </dl>
+                  <div className={styles.chatFeedback}>
+                    <Button className={styles.bridgeButton} onClick={stopResponse} type="button">
+                      Stop
+                    </Button>
+                    <Button
+                      className={styles.bridgeButton}
+                      onClick={() => approval?.answer(false)}
+                      ref={denyRef}
+                      type="button"
+                    >
+                      Deny
+                    </Button>
+                    <Button
+                      className={styles.bridgeButton}
+                      onClick={() => draftTools.current?.revokeGrant()}
+                      type="button"
+                    >
+                      Revoke draft access
+                    </Button>
+                    <Button className={styles.bridgeButton} onClick={() => approval?.answer(true)} type="button">
+                      Approve
+                    </Button>
+                  </div>
+                </AlertDialogContent>
+              </AlertDialog>
 
               <AgentConnections
                 control={inputRef}
@@ -290,7 +376,7 @@ export const AgentWorkspace = () => {
             <span>Agent</span>
           </span>
           <span className={styles.statusMessage} role="status">
-            {isLoading ? "Agent is responding" : ""}
+            {chat.responding ? "Agent is responding" : chat.stopped ? "Response stopped" : ""}
           </span>
           <span className={styles.statusClock}>
             <Icon name="clock" size={14} />

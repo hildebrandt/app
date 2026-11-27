@@ -26,6 +26,33 @@ export type DraftToolChange = {
 export type DraftToolResult =
   | { ok: true; change: DraftToolChange | null }
   | { ok: false; error: DraftToolError };
+export type DraftToolOutcome =
+  | "changed"
+  | "unchanged"
+  | "denied"
+  | "cancelled"
+  | "unavailable"
+  | "unknown";
+
+export type ProtectedDraftProposal = {
+  previous: string;
+  value: string;
+};
+
+export type ProtectedDraftOptions = {
+  signal: AbortSignal;
+  approve: (
+    proposal: ProtectedDraftProposal,
+    signal: AbortSignal,
+  ) => Promise<boolean>;
+  onObserved?: (result: ProtectedDraftResult) => void;
+};
+
+export type ProtectedDraftResult = {
+  outcome: DraftToolOutcome;
+};
+
+type ProtectedRefusal = "cancelled" | "denied" | "unavailable";
 
 export type DraftToolDefinition = {
   readonly name: DraftToolName;
@@ -42,11 +69,18 @@ export type DraftToolsOptions = {
   getControl: () => HTMLTextAreaElement | null;
   getDraft: () => string;
   isGranted: () => boolean;
+  setGrant: (granted: boolean) => void;
 };
 
 export type DraftTools = {
   list: () => readonly DraftToolDefinition[];
   call: (name: unknown, input: unknown) => Promise<DraftToolResult>;
+  runProtectedSetDraft: (
+    input: unknown,
+    options: ProtectedDraftOptions,
+  ) => Promise<ProtectedDraftResult>;
+  cancelProtected: () => void;
+  revokeGrant: () => void;
   resetUndo: () => void;
   dispose: () => void;
 };
@@ -91,14 +125,65 @@ type UndoSlot = {
 type DraftAction = {
   control: HTMLTextAreaElement;
   controller: AbortController;
-  observedPrevious?: string;
+  commit: (() => void) | null;
+  committed: boolean;
+  expectedPrevious: string | undefined;
+  kind: "external" | "protected";
+  observedPrevious: string | undefined;
   permissionDenied: boolean;
+  refusal: ProtectedRefusal | null;
   value: string;
 };
 
 const fail = (error: DraftToolError): DraftToolResult => ({ ok: false, error });
 
 const succeed = (change: DraftToolChange | null): DraftToolResult => ({ ok: true, change });
+
+const protectedResult = (outcome: DraftToolOutcome): ProtectedDraftResult => ({
+  outcome,
+});
+
+const linkAbort = (
+  source: AbortSignal,
+  target: AbortController,
+): (() => void) => {
+  const forward = () => target.abort();
+  source.addEventListener("abort", forward, { once: true });
+  if (source.aborted) {
+    target.abort();
+  }
+  return () => source.removeEventListener("abort", forward);
+};
+
+type ApprovalDecision = "approved" | "denied" | "cancelled" | "unknown";
+
+const awaitApproval = async (
+  approve: ProtectedDraftOptions["approve"],
+  proposal: ProtectedDraftProposal,
+  signal: AbortSignal,
+): Promise<ApprovalDecision> => {
+  if (signal.aborted) {
+    return "cancelled";
+  }
+  let onAbort: () => void = () => undefined;
+  const cancelled = new Promise<ApprovalDecision>((resolve) => {
+    onAbort = () => resolve("cancelled");
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+  try {
+    return await Promise.race([
+      approve(proposal, signal).then(
+        (approved): ApprovalDecision => (approved ? "approved" : "denied"),
+        (): ApprovalDecision => "unknown",
+      ),
+      cancelled,
+    ]);
+  } catch {
+    return "unknown";
+  } finally {
+    signal.removeEventListener("abort", onAbort);
+  }
+};
 
 const matchesSchema = (
   input: object,
@@ -116,6 +201,20 @@ const matchesSchema = (
   return schema.required.every((key) => Object.hasOwn(input, key));
 };
 
+const draftValueFits = (value: string): boolean => {
+  if (value.length <= DRAFT_VALUE_SCHEMA.maxLength) {
+    return true;
+  }
+  let codePoints = 0;
+  for (const _codePoint of value) {
+    codePoints += 1;
+    if (codePoints > DRAFT_VALUE_SCHEMA.maxLength) {
+      return false;
+    }
+  }
+  return true;
+};
+
 const parseSetDraftInput = (input: unknown): string | null => {
   try {
     if (typeof input !== "object" || input === null || Array.isArray(input)) {
@@ -129,17 +228,8 @@ const parseSetDraftInput = (input: unknown): string | null => {
       return null;
     }
     const value = Reflect.get(input, "value");
-    if (typeof value !== "string") {
+    if (typeof value !== "string" || !draftValueFits(value)) {
       return null;
-    }
-    if (value.length > DRAFT_VALUE_SCHEMA.maxLength) {
-      let codePoints = 0;
-      for (const _codePoint of value) {
-        codePoints += 1;
-        if (codePoints > DRAFT_VALUE_SCHEMA.maxLength) {
-          return null;
-        }
-      }
     }
     return value;
   } catch {
@@ -168,7 +258,12 @@ const targetsControl = (ref: string, control: HTMLTextAreaElement): boolean => {
   }
 };
 
-export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftToolsOptions): DraftTools => {
+export const createDraftTools = ({
+  getControl,
+  getDraft,
+  isGranted,
+  setGrant,
+}: DraftToolsOptions): DraftTools => {
   let undo: UndoSlot | null = null;
   let disposed = false;
   let activeAction: DraftAction | null = null;
@@ -202,17 +297,43 @@ export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftTools
     }
   };
 
+  const refuseProtected = (
+    action: DraftAction,
+    reason: ProtectedRefusal,
+  ): void => {
+    if (action.kind === "protected") {
+      action.refusal ??= reason;
+    }
+  };
+
   const allowStep = (step: AgentAction): boolean => {
     const action = activeAction;
     if (!action) {
       return false;
     }
-    if (!permitted()) {
-      action.permissionDenied = true;
+    if (action.kind === "protected" && action.controller.signal.aborted) {
+      action.refusal ??= "cancelled";
       return false;
     }
-    return (
-      !action.controller.signal.aborted &&
+    if (!permitted()) {
+      if (action.kind === "protected") {
+        action.refusal ??= "unavailable";
+      } else {
+        action.permissionDenied = true;
+      }
+      return false;
+    }
+    if (action.controller.signal.aborted) {
+      return false;
+    }
+    if (
+      action.expectedPrevious !== undefined &&
+      readDraft() !== action.expectedPrevious
+    ) {
+      refuseProtected(action, "unavailable");
+      return false;
+    }
+    const allowed =
       step.confirm === undefined &&
       step.component === "textarea" &&
       step.label === DRAFT_LABEL &&
@@ -220,8 +341,11 @@ export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftTools
       step.args.length === 1 &&
       step.args[0] === action.value &&
       readControl() === action.control &&
-      targetsControl(step.ref, action.control)
-    );
+      targetsControl(step.ref, action.control);
+    if (!allowed) {
+      refuseProtected(action, "unavailable");
+    }
+    return allowed;
   };
 
   const agent = createAgent({ allow: allowStep });
@@ -240,6 +364,17 @@ export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftTools
         typeof change.previous === "string"
       ) {
         activeAction.observedPrevious = change.previous;
+        if (
+          activeAction.kind === "protected" &&
+          !activeAction.committed &&
+          change.previous === activeAction.expectedPrevious &&
+          permitted() &&
+          control.isConnected &&
+          readControl() === control &&
+          control.value === change.value
+        ) {
+          activeAction.commit?.();
+        }
       }
       return;
     }
@@ -259,9 +394,15 @@ export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftTools
     onApplied: (previous: string) => void,
   ): Promise<DraftToolResult> => {
     const action: DraftAction = {
+      commit: null,
+      committed: false,
       control,
       controller: new AbortController(),
+      expectedPrevious: undefined,
+      kind: "external",
+      observedPrevious: undefined,
       permissionDenied: false,
+      refusal: null,
       value,
     };
     activeAction = action;
@@ -297,6 +438,142 @@ export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftTools
       return fail(action.permissionDenied ? "permission_denied" : "action_failed");
     } finally {
       activeAction = null;
+    }
+  };
+
+  const runProtectedSetDraft = async (
+    input: unknown,
+    { approve, onObserved, signal }: ProtectedDraftOptions,
+  ): Promise<ProtectedDraftResult> => {
+    let published = false;
+    const publish = (outcome: DraftToolOutcome): ProtectedDraftResult => {
+      if (!published) {
+        published = true;
+        try {
+          onObserved?.(protectedResult(outcome));
+        } catch {
+          // Reporting a result must not change the protected outcome.
+        }
+      }
+      return protectedResult(outcome);
+    };
+    if (disposed || activeAction !== null) {
+      return publish("unavailable");
+    }
+    const parsed = typeof input === "string" ? input : parseSetDraftInput(input);
+    if (parsed === null || !draftValueFits(parsed)) {
+      return publish("unavailable");
+    }
+    if (!permitted()) {
+      return publish("unavailable");
+    }
+    if (signal.aborted) {
+      return publish("cancelled");
+    }
+    const control = readControl();
+    const previous = readDraft();
+    if (control === null || previous === null) {
+      return publish("unavailable");
+    }
+    const value = parsed.replace(/\r\n?/gu, "\n");
+    if (previous === value) {
+      return publish("unchanged");
+    }
+
+    const action: DraftAction = {
+      commit: null,
+      committed: false,
+      control,
+      controller: new AbortController(),
+      expectedPrevious: previous,
+      kind: "protected",
+      observedPrevious: undefined,
+      permissionDenied: false,
+      refusal: null,
+      value,
+    };
+    action.commit = () => {
+      if (action.committed) {
+        return;
+      }
+      action.committed = true;
+      undo = {
+        control,
+        previous: action.observedPrevious ?? previous,
+        applied: value,
+      };
+      publish("changed");
+    };
+    const unlink = linkAbort(signal, action.controller);
+    activeAction = action;
+    try {
+      const decision = await awaitApproval(
+        approve,
+        { previous, value },
+        action.controller.signal,
+      );
+      if (action.committed) {
+        return publish("changed");
+      }
+      if (decision === "cancelled" || action.controller.signal.aborted) {
+        return publish("cancelled");
+      }
+      if (decision === "denied") {
+        return publish("denied");
+      }
+      if (decision === "unknown") {
+        return publish("unknown");
+      }
+      if (disposed) {
+        return publish("cancelled");
+      }
+      if (
+        !permitted() ||
+        readControl() !== control ||
+        readDraft() !== previous
+      ) {
+        return publish("unavailable");
+      }
+
+      action.observedPrevious = undefined;
+      try {
+        await agent.act(
+          { steps: [{ ref: DRAFT_LABEL, action: "setValue", args: [value] }] },
+          { signal: action.controller.signal },
+        );
+      } catch {
+        // The observed change decides whether the edit committed despite this.
+      }
+
+      if (action.committed) {
+        return publish("changed");
+      }
+      const observed = action.observedPrevious;
+      if (observed !== undefined) {
+        if (readControl() === control && readDraft() === value) {
+          undo = { control, previous: observed, applied: value };
+          return publish("changed");
+        }
+        return publish("unknown");
+      }
+      if (action.controller.signal.aborted) {
+        return publish(
+          readControl() === control && readDraft() === value
+            ? "unknown"
+            : "cancelled",
+        );
+      }
+      if (action.refusal !== null) {
+        return publish(action.refusal);
+      }
+      return publish("unknown");
+    } catch {
+      return publish("unknown");
+    } finally {
+      unlink();
+      if (activeAction === action) {
+        activeAction = null;
+      }
     }
   };
 
@@ -373,6 +650,16 @@ export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftTools
     }
   };
 
+  const cancelProtected = (): void => {
+    if (activeAction?.kind === "protected") {
+      activeAction.controller.abort();
+    }
+  };
+  const revokeGrant = (): void => {
+    cancelProtected();
+    setGrant(false);
+  };
+
   const resetUndo = (): void => {
     undo = null;
     activeAction?.controller.abort();
@@ -388,5 +675,13 @@ export const createDraftTools = ({ getControl, getDraft, isGranted }: DraftTools
     activeAction?.controller.abort();
   };
 
-  return { list, call, resetUndo, dispose };
+  return {
+    list,
+    call,
+    runProtectedSetDraft,
+    cancelProtected,
+    revokeGrant,
+    resetUndo,
+    dispose,
+  };
 };

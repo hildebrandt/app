@@ -39,6 +39,11 @@ export const AgentConnections = ({ control, draft, hydrated, tools }: AgentConne
       getControl: () => control.current,
       getDraft: () => draft.current,
       isGranted: () => grant.current?.checked === true,
+      setGrant: (granted) => {
+        if (grant.current !== null) {
+          grant.current.checked = granted;
+        }
+      },
     });
     tools.current = activeTools;
 
@@ -113,7 +118,17 @@ export const AgentConnections = ({ control, draft, hydrated, tools }: AgentConne
     <details className={styles.connections}>
       <summary>Agent connections</summary>
       <label className={styles.connectionGrant}>
-        <input autoComplete="off" disabled={!hydrated} ref={grant} type="checkbox" />
+        <input
+          autoComplete="off"
+          disabled={!hydrated}
+          onChange={(event) => {
+            if (!event.currentTarget.checked) {
+              tools.current?.cancelProtected();
+            }
+          }}
+          ref={grant}
+          type="checkbox"
+        />
         Allow agents to edit the draft
       </label>
       <form className={styles.bridgeForm} onSubmit={connectBridge}>

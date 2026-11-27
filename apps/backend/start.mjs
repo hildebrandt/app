@@ -1,6 +1,27 @@
-import { chat, EventType, toServerSentEventsResponse } from "@tanstack/ai";
+import {
+  chat,
+  chatParamsFromRequestBody,
+  EventType,
+  toolDefinition,
+  toServerSentEventsResponse,
+} from "@tanstack/ai";
 import { openaiCompatibleText } from "@tanstack/ai-openai/compatible";
 import { serve } from "srvx";
+
+import {
+  parseSetDraftInput,
+  setDraftToolSpec,
+} from "../../packages/agent-chat-contract/set-draft.mjs";
+import {
+  readChatOwnerSecret,
+  verifyChatOwner,
+} from "../../packages/agent-chat-contract/owner.mjs";
+import {
+  createContinuationStore,
+  DEFAULT_CONTINUATION_TTL_MS,
+  DEFAULT_MAX_CONTINUATION_RECORDS,
+  prepareChatRequest,
+} from "./continuation.mjs";
 
 const CHAT_PATH = "/api/chat";
 const HOSTNAME = "127.0.0.1";
@@ -12,6 +33,9 @@ const PROVIDER_MODEL = "default";
 const PROVIDER_TIMEOUT_MS = 60_000;
 const MAX_THREAD_ID_LENGTH = 256;
 const MAX_RUN_ID_LENGTH = 256;
+const CLIENT_CLOSED_REQUEST_STATUS = 499;
+const MAX_TOOL_CALL_ID_LENGTH = 256;
+const MAX_TOOL_ARGUMENTS_LENGTH = 8192;
 
 export const GENERIC_FAILURE_MESSAGE = "Chat is unavailable. Try again.";
 
@@ -20,9 +44,47 @@ const CHAT_FAILURE_HEADERS = {
   "content-type": "text/plain; charset=utf-8",
 };
 
-/** @typedef {{ role: 'user' | 'assistant', content: string }} ChatMessage */
-/** @typedef {{ messages: ChatMessage[], threadId: string, runId?: string, abortController: AbortController }} StreamInput */
-/** @typedef {{ apiKey?: string, createStream?: (input: StreamInput) => import('@tanstack/ai').ChatStream }} HandlerOptions */
+const SET_DRAFT_TOOL = toolDefinition(setDraftToolSpec);
+
+/** @typedef {import("@tanstack/ai").RunAgentResumeItem} ResumeEntry */
+/** @typedef {typeof SET_DRAFT_TOOL} ToolSpec */
+/** @typedef {import("@tanstack/ai").AnyTextAdapter} ChatAdapter */
+
+/**
+ * @typedef {object} ChatOptions
+ * @property {ChatAdapter} adapter
+ * @property {boolean} debug
+ * @property {import("@tanstack/ai").ModelMessage[]} messages
+ * @property {string} threadId
+ * @property {AbortController} abortController
+ * @property {string} [runId]
+ * @property {string} [parentRunId]
+ * @property {ResumeEntry[]} [resume]
+ * @property {ToolSpec[]} [tools]
+ */
+
+/**
+ * @typedef {object} StreamInput
+ * @property {import("@tanstack/ai").ModelMessage[]} messages
+ * @property {string} threadId
+ * @property {string} [runId]
+ * @property {string} [parentRunId]
+ * @property {ResumeEntry[]} [resume]
+ * @property {ToolSpec[]} [tools]
+ * @property {AbortController} abortController
+ */
+
+/**
+ * @typedef {object} HandlerOptions
+ * @property {string} [apiKey]
+ * @property {ChatAdapter} [adapter]
+ * @property {string} [ownerSecret]
+ * @property {number} [continuationTtlMs]
+ * @property {number} [maxContinuationRecords]
+ * @property {() => number} [now]
+ * @property {(input: StreamInput) => import("@tanstack/ai").ChatStream} [createStream]
+ */
+
 /** @typedef {{ threadId?: unknown, runId?: unknown, metadata?: { tanstack?: { threadId?: unknown, runId?: unknown } } }} RunIdentifiers */
 
 /** @param {unknown} value @returns {value is Record<string, unknown>} */
@@ -69,7 +131,7 @@ const readThreadId = (chunk) => {
 
 /** @param {string | undefined} threadId @param {string | undefined} runId */
 const runErrorChunk = (threadId, runId) => {
-  /** @type {import('@tanstack/ai').RunErrorEvent} */
+  /** @type {import("@tanstack/ai").RunErrorEvent} */
   const chunk = {
     type: EventType.RUN_ERROR,
     timestamp: Date.now(),
@@ -87,69 +149,74 @@ const runErrorChunk = (threadId, runId) => {
   return chunk;
 };
 
-/** @param {unknown} body Untrusted chat request payload. */
-const toChatMessages = (body) => {
-  if (!isRecord(body)) {
+/**
+ * @param {unknown} input Parsed tool input carried by TOOL_CALL_END.
+ * @param {unknown} args Final arguments string carried by TOOL_CALL_END.
+ * @param {string} trackedArgs Arguments accumulated from TOOL_CALL_ARGS deltas.
+ */
+const readSetDraftInput = (input, args, trackedArgs) => {
+  const direct = parseSetDraftInput(input);
+
+  if (direct !== null) {
+    return direct;
+  }
+
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- The final tool arguments come from the trusted provider stream.
+  const finalArgs =
+    typeof args === "string" && args.length > 0 ? args : trackedArgs;
+
+  if (finalArgs.length > MAX_TOOL_ARGUMENTS_LENGTH) {
     return null;
   }
 
-  const { threadId, messages: input, runId } = body;
+  /** @type {unknown} */
+  let parsed;
 
-  const validThreadId =
-    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Validate the thread ID before forwarding it.
-    typeof threadId === "string" &&
-    threadId.length > 0 &&
-    threadId.length <= MAX_THREAD_ID_LENGTH;
-
-  if (!validThreadId || !Array.isArray(input)) {
+  try {
+    parsed = JSON.parse(finalArgs);
+  } catch {
     return null;
   }
 
-  /** @type {ChatMessage[]} */
-  const messages = [];
-  let hasUserMessage = false;
-
-  /** @type {unknown[]} */
-  const entries = input;
-
-  for (const message of entries) {
-    const { role, content } = isRecord(message) ? message : {};
-    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Validate untrusted message text before using it.
-    const hasContent = typeof content === "string" && content.length > 0;
-
-    if (!(hasContent && (role === "user" || role === "assistant"))) {
-      continue;
-    }
-
-    messages.push({ role, content });
-
-    if (role === "user") {
-      hasUserMessage = true;
-    }
-  }
-
-  const validRunId =
-    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- The optional run ID comes from untrusted JSON.
-    typeof runId === "string" &&
-    runId.length > 0 &&
-    runId.length <= MAX_RUN_ID_LENGTH;
-
-  return hasUserMessage
-    ? { threadId, messages, runId: validRunId ? runId : undefined }
-    : null;
+  return parseSetDraftInput(parsed);
 };
 
-/** @param {import('@tanstack/ai').ChatStream} source @param {Pick<StreamInput, 'threadId' | 'runId' | 'abortController'>} ids */
-const sanitizeStream = (source, { threadId, runId, abortController }) =>
+/**
+ * @param {import("@tanstack/ai").ChatStream} source Provider stream.
+ * @param {{ threadId: string, runId: string | undefined, abortController: AbortController, owner: string | null, store: ReturnType<typeof createContinuationStore> }} input Request scope and continuation records.
+ */
+const sanitizeStream = (
+  source,
+  { threadId, runId, abortController, owner, store }
+) =>
   (async function* sanitizedChatStream() {
     let currentThreadId = threadId;
     let currentRunId = runId;
+    let runFinished = false;
+    const stopRun = () => {
+      if (owner !== null && currentRunId !== undefined) {
+        store.stopRun(owner, threadId, currentRunId);
+      }
+    };
+    const onAbort = () => {
+      stopRun();
+    };
+
+    abortController.signal.addEventListener("abort", onAbort, { once: true });
+
+    if (abortController.signal.aborted) {
+      stopRun();
+      abortController.signal.removeEventListener("abort", onAbort);
+      return;
+    }
+
+    /** @type {Map<string, { name: string | undefined, args: string }>} */
+    const calls = new Map();
 
     try {
       for await (const chunk of source) {
         if (chunk.type === EventType.RUN_STARTED) {
           currentThreadId = readThreadId(chunk) ?? currentThreadId;
-
           currentRunId = readRunId(chunk) ?? currentRunId;
 
           yield chunk;
@@ -157,10 +224,140 @@ const sanitizeStream = (source, { threadId, runId, abortController }) =>
           continue;
         }
 
-        if (chunk.type === EventType.RUN_ERROR) {
-          currentThreadId = readThreadId(chunk) ?? currentThreadId;
+        if (chunk.type === EventType.TOOL_CALL_START) {
+          const { toolCallId, toolCallName } = chunk;
 
+          if (
+            // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Provider stream events are untrusted.
+            typeof toolCallId === "string" &&
+            toolCallId.length > 0 &&
+            toolCallId.length <= MAX_TOOL_CALL_ID_LENGTH
+          ) {
+            calls.set(toolCallId, {
+              name:
+                // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Provider stream events are untrusted.
+                typeof toolCallName === "string" ? toolCallName : undefined,
+              args: "",
+            });
+          }
+
+          yield chunk;
+
+          continue;
+        }
+
+        if (chunk.type === EventType.TOOL_CALL_ARGS) {
+          const { toolCallId, delta } = chunk;
+
+          if (
+            // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Provider stream events are untrusted.
+            typeof toolCallId === "string" &&
+            // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Provider stream events are untrusted.
+            typeof delta === "string"
+          ) {
+            const tracked = calls.get(toolCallId);
+
+            if (
+              tracked !== undefined &&
+              tracked.args.length + delta.length <= MAX_TOOL_ARGUMENTS_LENGTH
+            ) {
+              tracked.args += delta;
+            }
+          }
+
+          yield chunk;
+
+          continue;
+        }
+
+        if (chunk.type === EventType.TOOL_CALL_END) {
+          const { toolCallId } = chunk;
+
+          if (
+            owner !== null &&
+            currentRunId !== undefined &&
+            !abortController.signal.aborted &&
+            // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Provider stream events are untrusted.
+            typeof toolCallId === "string" &&
+            toolCallId.length > 0 &&
+            toolCallId.length <= MAX_TOOL_CALL_ID_LENGTH
+          ) {
+            const tracked = calls.get(toolCallId);
+            const trackedArgs = tracked?.args ?? "";
+
+            const finalArgs = "args" in chunk ? chunk.args : undefined;
+
+            if (tracked?.name === "set_draft") {
+              const input = readSetDraftInput(
+                chunk.input,
+                finalArgs,
+                trackedArgs
+              );
+
+              if (input !== null) {
+                store.add({
+                  owner,
+                  threadId,
+                  runId: currentRunId,
+                  toolCallId,
+                  input,
+                });
+              }
+            }
+          }
+
+          yield chunk;
+
+          continue;
+        }
+
+        if (chunk.type === EventType.RUN_FINISHED) {
+          if (abortController.signal.aborted) {
+            stopRun();
+            return;
+          }
+
+          currentThreadId = readThreadId(chunk) ?? currentThreadId;
           currentRunId = readRunId(chunk) ?? currentRunId;
+          runFinished = true;
+
+          const outcome = chunk.outcome;
+          if (outcome?.type === "interrupt") {
+            if (
+              owner === null ||
+              currentRunId === undefined ||
+              !store.finishRun(owner, threadId, currentRunId, outcome.interrupts)
+            ) {
+              stopRun();
+              yield runErrorChunk(currentThreadId, currentRunId);
+              return;
+            }
+          } else {
+            stopRun();
+            if ([...calls.values()].some(({ name }) => name === "set_draft")) {
+              yield runErrorChunk(currentThreadId, currentRunId);
+              return;
+            }
+          }
+
+          yield chunk;
+
+          return;
+        }
+
+        if (chunk.type === EventType.RUN_ERROR) {
+          if (abortController.signal.aborted) {
+            stopRun();
+            return;
+          }
+
+          currentThreadId = readThreadId(chunk) ?? currentThreadId;
+          currentRunId = readRunId(chunk) ?? currentRunId;
+          runFinished = true;
+
+          if (owner !== null && currentRunId !== undefined) {
+            store.stopRun(owner, threadId, currentRunId);
+          }
 
           yield runErrorChunk(currentThreadId, currentRunId);
 
@@ -173,22 +370,54 @@ const sanitizeStream = (source, { threadId, runId, abortController }) =>
       if (!abortController.signal.aborted) {
         yield runErrorChunk(currentThreadId, currentRunId);
       }
+    } finally {
+      abortController.signal.removeEventListener("abort", onAbort);
+
+      if (!runFinished) {
+        stopRun();
+      }
     }
   })();
+
+/** @param {Request} request @param {string | undefined} secret */
+const readRequestOwner = (request, secret) => {
+  if (secret === undefined) {
+    return null;
+  }
+
+  const token = request.headers.get("x-agent-chat-owner");
+
+  return token === null ? null : verifyChatOwner(token, secret);
+};
 
 /** @param {HandlerOptions} options Provider credentials and optional stream factory. */
 export const createChatHandler = (options = {}) => {
   const apiKey = options.apiKey ?? process.env.LLM_API_KEY;
-  /** @type {ReturnType<typeof openaiCompatibleText> | undefined} */
-  let adapter;
+  const ownerSecret = readChatOwnerSecret(
+    options.ownerSecret ?? process.env.CHAT_OWNER_SECRET
+  );
+  const store = createContinuationStore({
+    ttlMs: options.continuationTtlMs ?? DEFAULT_CONTINUATION_TTL_MS,
+    maxRecords:
+      options.maxContinuationRecords ?? DEFAULT_MAX_CONTINUATION_RECORDS,
+    now: options.now,
+  });
 
+  /** @type {ReturnType<typeof openaiCompatibleText> | undefined} */
+  let defaultAdapter;
+
+  /** @returns {ChatAdapter} */
   const getAdapter = () => {
+    if (options.adapter !== undefined) {
+      return options.adapter;
+    }
+
     // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Untrusted option or environment value; string check validates the API key at the boundary.
     if (typeof apiKey !== "string" || apiKey.length === 0) {
       throw new Error("LLM_API_KEY is not configured.");
     }
 
-    adapter ??= openaiCompatibleText(PROVIDER_MODEL, {
+    defaultAdapter ??= openaiCompatibleText(PROVIDER_MODEL, {
       baseURL: PROVIDER_BASE_URL,
       api: "chat-completions",
       maxRetries: 0,
@@ -197,13 +426,21 @@ export const createChatHandler = (options = {}) => {
       apiKey,
     });
 
-    return adapter;
+    return defaultAdapter;
   };
 
   const createStream =
     options.createStream ??
-    (({ messages, threadId, runId, abortController }) => {
-      /** @type {StreamInput & {adapter: ReturnType<typeof openaiCompatibleText>, debug: boolean}} */
+    (({
+      messages,
+      threadId,
+      runId,
+      parentRunId,
+      resume,
+      tools,
+      abortController,
+    }) => {
+      /** @type {ChatOptions} */
       const chatOptions = {
         adapter: getAdapter(),
         debug: false,
@@ -214,6 +451,18 @@ export const createChatHandler = (options = {}) => {
 
       if (runId !== undefined) {
         chatOptions.runId = runId;
+      }
+
+      if (parentRunId !== undefined) {
+        chatOptions.parentRunId = parentRunId;
+      }
+
+      if (resume !== undefined) {
+        chatOptions.resume = resume;
+      }
+
+      if (tools !== undefined && tools.length > 0) {
+        chatOptions.tools = tools;
       }
 
       return chat(chatOptions);
@@ -234,16 +483,58 @@ export const createChatHandler = (options = {}) => {
       });
     }
 
-    let chatMessages;
+    if (request.signal.aborted) {
+      return failureResponse(CLIENT_CLOSED_REQUEST_STATUS);
+    }
+
+    /** @type {Awaited<ReturnType<typeof chatParamsFromRequestBody>>} */
+    let params;
 
     try {
-      chatMessages = toChatMessages(await request.json());
+      params = await chatParamsFromRequestBody(await request.json());
     } catch {
       return failureResponse(400);
     }
 
-    if (chatMessages === null) {
+    if (
+      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- The parser returns a string, but the boundary still checks it.
+      typeof params.threadId !== "string" ||
+      params.threadId.length === 0 ||
+      params.threadId.length > MAX_THREAD_ID_LENGTH
+    ) {
       return failureResponse(400);
+    }
+
+    const requestedRunId = params.runId;
+
+    const runId =
+      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- The optional run ID comes from untrusted JSON.
+      typeof requestedRunId === "string" &&
+      requestedRunId.length > 0 &&
+      requestedRunId.length <= MAX_RUN_ID_LENGTH
+        ? requestedRunId
+        : undefined;
+
+    const parentRunId = params.parentRunId;
+
+    if (
+      parentRunId !== undefined &&
+      (parentRunId.length === 0 || parentRunId.length > MAX_RUN_ID_LENGTH)
+    ) {
+      return failureResponse(400);
+    }
+
+    const owner = readRequestOwner(request, ownerSecret);
+    const decision = prepareChatRequest({
+      params,
+      owner,
+      store,
+      runId,
+      parentRunId,
+    });
+
+    if ("status" in decision) {
+      return failureResponse(decision.status);
     }
 
     const abortController = new AbortController();
@@ -258,10 +549,23 @@ export const createChatHandler = (options = {}) => {
       request.signal.addEventListener("abort", onRequestAbort, { once: true });
     }
 
+    /** @type {ToolSpec[] | undefined} */
+    const tools = owner === null ? undefined : [SET_DRAFT_TOOL];
+
     let stream;
 
     try {
-      stream = createStream({ ...chatMessages, abortController });
+      stream = createStream({
+        messages: decision.messages,
+        threadId: decision.threadId,
+        ...(decision.runId !== undefined && { runId: decision.runId }),
+        ...(decision.parentRunId !== undefined && {
+          parentRunId: decision.parentRunId,
+        }),
+        ...(decision.resume !== undefined && { resume: decision.resume }),
+        ...(tools !== undefined && { tools }),
+        abortController,
+      });
     } catch {
       request.signal.removeEventListener("abort", onRequestAbort);
 
@@ -269,7 +573,13 @@ export const createChatHandler = (options = {}) => {
     }
 
     return toServerSentEventsResponse(
-      sanitizeStream(stream, { ...chatMessages, abortController }),
+      sanitizeStream(stream, {
+        threadId: decision.threadId,
+        runId: decision.runId,
+        abortController,
+        owner,
+        store,
+      }),
       { abortController }
     );
   };

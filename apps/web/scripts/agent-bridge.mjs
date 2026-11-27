@@ -33,7 +33,7 @@ if (!appOrigin) {
 }
 
 const bridgePath = `/${randomBytes(16).toString("hex")}`;
-const pendingIds = new Set();
+const pending = new Map();
 let browser;
 let shuttingDown = false;
 
@@ -41,11 +41,12 @@ const writeOutput = (message) => {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 };
 
-const failPendingRequests = (error) => {
-  for (const id of pendingIds) {
+const failPendingRequests = () => {
+  for (const [id, mutatesDraft] of pending) {
+    const error = mutatesDraft ? "draft_outcome_unknown" : "bridge_disconnected";
     writeOutput({ id, result: { error, ok: false } });
   }
-  pendingIds.clear();
+  pending.clear();
 };
 
 const isValidRequest = (request) => {
@@ -84,7 +85,7 @@ const handleRequestLine = (line) => {
     return;
   }
   const { id } = request;
-  if (pendingIds.has(id)) {
+  if (pending.has(id)) {
     writeOutput({ id, result: { error: "duplicate_request_id", ok: false } });
     return;
   }
@@ -97,15 +98,19 @@ const handleRequestLine = (line) => {
     writeOutput({ id, result: { error: "bridge_disconnected", ok: false } });
     return;
   }
-  if (pendingIds.size >= MAX_PENDING_REQUESTS) {
+  if (pending.size >= MAX_PENDING_REQUESTS) {
     writeOutput({ id, result: { error: "bridge_busy", ok: false } });
     return;
   }
-  pendingIds.add(id);
+  pending.set(
+    id,
+    request.method === "tools/call" &&
+      (request.name === "set_draft" || request.name === "undo_draft")
+  );
   try {
     connection.send(line);
   } catch {
-    pendingIds.delete(id);
+    pending.delete(id);
     writeOutput({ id, result: { error: "bridge_disconnected", ok: false } });
   }
 };
@@ -128,7 +133,7 @@ const handleBrowserReply = (connection, payload, isBinary) => {
     Array.isArray(reply) ||
     !Object.hasOwn(reply, "result") ||
     !Number.isSafeInteger(reply.id) ||
-    !pendingIds.delete(reply.id)
+    !pending.delete(reply.id)
   ) {
     return;
   }
@@ -149,7 +154,7 @@ const attachBrowser = (connection) => {
       return;
     }
     browser = undefined;
-    failPendingRequests("bridge_disconnected");
+    failPendingRequests();
   });
 };
 

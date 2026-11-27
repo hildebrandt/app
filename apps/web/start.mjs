@@ -59,6 +59,7 @@ export const start = async ({
 
   return serve({
     fetch: createFetchHandler(app),
+    hostname: "127.0.0.1",
     port: resolvePort(environment.PORT, port),
     manual,
   });
