@@ -9,6 +9,7 @@ import {
   Plus,
   Search,
   Send,
+  Square,
   Sun,
   Users,
   X,
@@ -27,6 +28,7 @@ const ICONS = {
   moon: Moon,
   plus: Plus,
   search: Search,
+  stop: Square,
   sun: Sun,
   users: Users,
 } satisfies Record<string, LucideIcon>;

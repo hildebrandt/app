@@ -6,14 +6,18 @@ draft, or enter a prompt in **Ask anything**. Press **Enter** or select
 The workspace follows the system color scheme until you use the light or dark
 mode button in the footer.
 
-Select **Stop** to cancel a response. The workspace keeps the text already
-received and any draft you entered while the agent was responding. For an
-interrupted text response, **Retry** replaces that answer without submitting a
-second user message or changing the draft.
+While the agent responds, **Thinking…** appears below the last message and the
+send arrow changes to a stop icon. Select **Stop response** to cancel. The
+workspace keeps the text already received and any draft you entered while
+waiting. For an interrupted text response, **Retry** replaces that answer
+without submitting a second user message or changing the draft.
+
+Select **Copy message** below a message to copy its text to the clipboard.
 
 If an embedded draft action was requested, the workspace does not retry the turn.
-Check the draft before sending another prompt. Stop does not reverse an edit that
-already landed. Use `undo_draft` while its permission and draft still match.
+Check the draft before sending another prompt. Stopping a response does not
+reverse an edit that already landed. Use `undo_draft` while its permission and
+draft still match.
 
 ## Run
 

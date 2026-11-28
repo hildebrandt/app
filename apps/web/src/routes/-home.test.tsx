@@ -109,7 +109,7 @@ describe("home route", () => {
 
     await waitFor(() => {
       expect(screen.getByText(reply)).toBeTruthy();
-      expect(screen.queryByText("Agent is responding")).toBeNull();
+      expect(screen.queryByText("Thinking…")).toBeNull();
     });
 
     expect(composer.value).toBe("");

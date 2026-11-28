@@ -14,7 +14,9 @@ const composer = (page: Page): Locator =>
 const submitButton = (page: Page): Locator =>
   page.getByRole("button", { name: "Submit prompt" });
 const stopButton = (page: Page): Locator =>
-  page.getByRole("button", { name: "Stop", exact: true });
+  page.getByRole("button", { name: "Stop response", exact: true });
+const thinkingIndicator = (page: Page): Locator =>
+  page.getByRole("status", { name: "Thinking…" });
 const retryButton = (page: Page): Locator =>
   page.getByRole("button", { name: "Retry", exact: true });
 const status = (page: Page): Locator =>
@@ -24,6 +26,33 @@ const userMessages = (page: Page): Locator =>
   page.locator('ol[aria-label="Chat messages"] li[data-role="user"]');
 const assistantMessages = (page: Page): Locator =>
   page.locator('ol[aria-label="Chat messages"] li[data-role="assistant"]');
+
+/**
+ * The shared contract places the thinking indicator below the transcript,
+ * outside the message list, so its bounds must sit below the list's bounds.
+ */
+async function expectThinkingBelowTranscript(page: Page): Promise<void> {
+  const indicator = thinkingIndicator(page);
+  await expect(indicator).toBeVisible();
+  await expect(indicator).toContainText("Thinking…");
+
+  await expect(
+    page.locator(
+      'ol[aria-label="Chat messages"] ~ [role="status"][aria-label="Thinking…"]',
+    ),
+  ).toHaveCount(1);
+  const transcript = page.locator('ol[aria-label="Chat messages"]');
+  const [indicatorBox, transcriptBox] = await Promise.all([
+    indicator.boundingBox(),
+    transcript.boundingBox(),
+  ]);
+  if (indicatorBox === null || transcriptBox === null) {
+    throw new Error("Thinking indicator or transcript is not laid out");
+  }
+  expect(indicatorBox.y).toBeGreaterThanOrEqual(
+    transcriptBox.y + transcriptBox.height,
+  );
+}
 
 async function openChat(page: Page, pair: ChatPair): Promise<void> {
   await page.goto(pair.webUrl);
@@ -83,12 +112,14 @@ test.describe("agent chat transport outcomes", () => {
     await expect(composer(page)).toHaveValue("");
     await expect(userMessages(page)).toHaveCount(1);
     await expect(page.getByText(partial, { exact: true })).toBeVisible();
-    await expect(stopButton(page)).toBeVisible();
-    await expect(status(page)).toHaveText("Agent is responding");
-
     await expect
       .poll(async () => (await runs(chatPair))[0]?.holding)
       .toBe(true);
+
+    await expect(stopButton(page)).toBeVisible();
+    await expect(submitButton(page)).toHaveCount(0);
+    await expectThinkingBelowTranscript(page);
+    await expect(status(page)).toHaveText("");
 
     const draft = "Draft kept after stop";
     await composer(page).fill(draft);
@@ -96,6 +127,8 @@ test.describe("agent chat transport outcomes", () => {
     await page.keyboard.press("Enter");
 
     await expect(stopButton(page)).toHaveCount(0);
+    await expect(thinkingIndicator(page)).toHaveCount(0);
+    await expect(submitButton(page)).toBeVisible();
     await expect(status(page)).toHaveText("Response stopped");
     await expect(alert(page)).toHaveCount(0);
     await expect(retryButton(page)).toHaveCount(0);
@@ -133,6 +166,55 @@ test.describe("agent chat transport outcomes", () => {
     await expect(userMessages(page)).toHaveCount(2);
     await expect(userMessages(page).nth(0)).toContainText(firstPrompt);
     await expect(userMessages(page).nth(1)).toContainText("Second prompt");
+  });
+
+  test("copy writes each message's exact multiline text to the clipboard", async ({
+    page,
+    chatPair,
+    context,
+  }) => {
+    const threadId = "thread-copy";
+    const userText = "First line of the prompt\nSecond line of the prompt";
+    const assistantText =
+      "First line of the answer.\nSecond line of the answer.";
+
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await chatPair.control.reset([
+      {
+        steps: finishedTurn(threadId, "run-copy", "assistant-copy", assistantText),
+      },
+    ]);
+    await openChat(page, chatPair);
+
+    await composer(page).fill("First line of the prompt");
+    await page.keyboard.press("Shift+Enter");
+    await page.keyboard.type("Second line of the prompt");
+    await expect(composer(page)).toHaveValue(userText);
+    await page.keyboard.press("Enter");
+
+    await expect(assistantMessages(page).first()).toContainText(
+      "Second line of the answer.",
+    );
+    await expect(userMessages(page)).toHaveCount(1);
+    await expect(assistantMessages(page)).toHaveCount(1);
+
+    const copyUser = userMessages(page)
+      .first()
+      .getByRole("button", { name: "Copy message" });
+    await expect(copyUser).toHaveCount(1);
+    await copyUser.click();
+    await expect
+      .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
+      .toBe(userText);
+
+    const copyAssistant = assistantMessages(page)
+      .first()
+      .getByRole("button", { name: "Copy message" });
+    await expect(copyAssistant).toHaveCount(1);
+    await copyAssistant.click();
+    await expect
+      .poll(async () => page.evaluate(() => navigator.clipboard.readText()))
+      .toBe(assistantText);
   });
 
   test("clean EOF keeps partial text and Retry replaces the answer once", async ({

@@ -25,6 +25,10 @@ function footerStatus(page: Page) {
 	return page.locator("footer span[role='status']");
 }
 
+function thinkingIndicator(page: Page) {
+	return page.getByRole("status", { name: "Thinking…" });
+}
+
 function draftOutcome(page: Page) {
 	return page.locator("p[role='status']");
 }
@@ -278,7 +282,7 @@ test("Stop during the approval dialog closes it without a continuation request o
 	draftChatPair: pair,
 }) => {
 	const dialog = await reachApproval(page, pair);
-	await dialog.getByRole("button", { name: "Stop", exact: true }).click();
+	await dialog.getByRole("button", { name: "Stop response", exact: true }).click();
 
 	await expect(dialog).toBeHidden();
 	const first = await pair.waitForProviderRun(1);
@@ -353,9 +357,10 @@ test("Stop after the edit commits keeps the change but starts no provider run", 
 	// The page gate holds that POST before it reaches the network; Stop then
 	// aborts the request while it is still unsubmitted.
 	await waitForBlockedContinuation(page);
+	await expect(thinkingIndicator(page)).toBeVisible();
 	const composerStop = page
 		.locator('form[aria-label="Start a new chat"]')
-		.getByRole("button", { name: "Stop", exact: true });
+		.getByRole("button", { name: "Stop response", exact: true });
 	await composerStop.click();
 	await releaseContinuation(page);
 	await waitForContinuationOutcome(page);
@@ -368,6 +373,7 @@ test("Stop after the edit commits keeps the change but starts no provider run", 
 	await expect(
 		page.getByRole("button", { name: "Submit prompt", exact: true }),
 	).toBeEnabled();
+	await expect(thinkingIndicator(page)).toHaveCount(0);
 	await expect(footerStatus(page)).toHaveText("Response stopped");
 	await expect(draftOutcome(page)).toHaveText(/^Draft changed\./);
 	await expect(workspaceAlert(page)).toHaveCount(0);

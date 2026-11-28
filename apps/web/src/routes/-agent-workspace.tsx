@@ -1,4 +1,8 @@
-import { composerPrimitive, messagePrimitive } from "@kind-ui/agent-ui/core";
+import {
+  composerPrimitive,
+  messagePrimitive,
+  thinkingIndicatorPrimitive,
+} from "@kind-ui/agent-ui/core";
 import { generateMessageId } from "@tanstack/ai-react";
 import { useHydrated } from "@tanstack/react-router";
 import {
@@ -32,7 +36,15 @@ import { useAgentChat } from "./-use-agent-chat";
 const messageParts = createParts(messagePrimitive, {
   root: "li",
   content: "p",
+  copy: "div",
 });
+const thinkingParts = createParts(thinkingIndicatorPrimitive, {
+  root: "div",
+  label: "span",
+  dots: "span",
+  dot: "span",
+});
+
 const composerParts = createParts(composerPrimitive, {
   root: "form",
   input: "div",
@@ -263,26 +275,50 @@ export const AgentWorkspace = () => {
               className={styles.starter}
               data-has-messages={chatMessages.length > 0}
             >
-              {chatMessages.length > 0 ? (
-                <ol aria-label="Chat messages" className={styles.transcript}>
-                  {chatMessages.map((message) => (
-                    <messageParts.Root
-                      className={styles.message}
-                      key={message.id}
-                      messageRole={message.role}
-                      render={<li role="listitem" />}
-                      status="complete"
-                      text={message.text}
-                    >
-                      <span className={styles.messageAuthor}>
-                        {message.role === "user" ? "You" : "Agent"}
-                      </span>
-                      <messageParts.Content className={styles.messageText}>
-                        {message.text}
-                      </messageParts.Content>
-                    </messageParts.Root>
-                  ))}
-                </ol>
+              {chatMessages.length > 0 || chat.responding ? (
+                <div className={styles.history}>
+                  {chatMessages.length > 0 ? (
+                    <ol aria-label="Chat messages" className={styles.transcript}>
+                      {chatMessages.map((message) => (
+                        <messageParts.Root
+                          className={styles.message}
+                          key={message.id}
+                          messageRole={message.role}
+                          render={<li role="listitem" />}
+                          status="complete"
+                          text={message.text}
+                        >
+                          <span className={styles.messageAuthor}>
+                            {message.role === "user" ? "You" : "Agent"}
+                          </span>
+                          <messageParts.Content className={styles.messageText}>
+                            {message.text}
+                          </messageParts.Content>
+                          <messageParts.Copy>
+                            <Button
+                              aria-label="Copy message"
+                              className={styles.messageCopy}
+                              data-kind-icon-button=""
+                              type="button"
+                            />
+                          </messageParts.Copy>
+                        </messageParts.Root>
+                      ))}
+                    </ol>
+                  ) : null}
+                  {chat.responding ? (
+                    <thinkingParts.Root className={styles.thinkingIndicator}>
+                      <thinkingParts.Dots>
+                        <thinkingParts.Dot />
+                        <thinkingParts.Dot />
+                        <thinkingParts.Dot />
+                      </thinkingParts.Dots>
+                      <thinkingParts.Label>
+                        {({ label }) => label}
+                      </thinkingParts.Label>
+                    </thinkingParts.Root>
+                  ) : null}
+                </div>
               ) : null}
 
               <div className={styles.composerDock}>
@@ -316,21 +352,24 @@ export const AgentWorkspace = () => {
                     </span>
                     {chat.responding && !approval ? (
                       <Button
-                        className={styles.stopButton}
-                        data-kind-button="secondary"
+                        aria-label="Stop response"
+                        className={styles.submitButton}
+                        data-kind-icon-button=""
                         onClick={stopResponse}
+                        type="button"
                       >
-                        Stop
+                        <Icon className={styles.stopIcon} name="stop" size={12} />
                       </Button>
-                    ) : null}
-                    <composerParts.Submit
-                      aria-disabled={!canSend}
-                      aria-label="Submit prompt"
-                      className={styles.submitButton}
-                      data-agent-confirm="Sends the message as you"
-                    >
-                      <Icon name="arrow-up" size={16} />
-                    </composerParts.Submit>
+                    ) : (
+                      <composerParts.Submit
+                        aria-disabled={!canSend}
+                        aria-label="Submit prompt"
+                        className={styles.submitButton}
+                        data-agent-confirm="Sends the message as you"
+                      >
+                        <Icon name="arrow-up" size={16} />
+                      </composerParts.Submit>
+                    )}
                   </div>
                 </composerParts.Root>
 
@@ -442,13 +481,8 @@ export const AgentWorkspace = () => {
 
         <footer className={styles.statusBar}>
           <span className={styles.statusMessage} role="status">
-            {chat.responding || chat.stopped ? (
-              <Status
-                label={
-                  chat.responding ? "Agent is responding" : "Response stopped"
-                }
-                status={chat.responding ? "running" : "cancelled"}
-              />
+            {chat.stopped ? (
+              <Status label="Response stopped" status="cancelled" />
             ) : null}
           </span>
           <Button
@@ -499,9 +533,14 @@ export const AgentWorkspace = () => {
             </div>
           </dl>
           <div className={styles.chatFeedback}>
-            <button data-kind-button="secondary" onClick={stopResponse} type="button">
-              Stop
-            </button>
+            <Button
+              aria-label="Stop response"
+              data-kind-icon-button=""
+              onClick={stopResponse}
+              type="button"
+            >
+              <Icon className={styles.stopIcon} name="stop" size={12} />
+            </Button>
             <button
               data-kind-button="secondary"
               onClick={() => approval?.answer(false)}
@@ -527,6 +566,6 @@ export const AgentWorkspace = () => {
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </div >
   );
 };
