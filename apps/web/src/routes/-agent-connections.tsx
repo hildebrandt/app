@@ -1,12 +1,31 @@
-import { Button } from "@ui-sdk/react/button";
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from "@ui-sdk/react/collapsible";
 import { Field } from "@ui-sdk/react/field";
 import { Input } from "@ui-sdk/react/input";
-import { type FormEvent, type RefObject, useEffect, useRef, useState } from "react";
+import {
+  type FormEvent,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-import styles from "../styles/agent-workspace.module.css";
+import {
+  KindCheckbox,
+  KindCheckboxIndicator,
+} from "../components/ui/internal/checkbox";
+import styles from "../styles/kind-app.module.css";
 
+import { Icon } from "./-agent-icon";
 import { createDraftTools, type DraftTools } from "./-agent-tools";
-import { handleBridgeMessage, registerDraftWebMcp, resolveBridgeUrl } from "./-agent-transports";
+import {
+  handleBridgeMessage,
+  registerDraftWebMcp,
+  resolveBridgeUrl,
+} from "./-agent-transports";
 
 type AgentConnectionsProps = {
   control: RefObject<HTMLTextAreaElement | null>;
@@ -19,14 +38,21 @@ type BridgeStatus = "idle" | "connecting" | "connected" | "failed" | "invalid";
 const bridgeStatusText: Record<BridgeStatus, string> = {
   connected: "Bridge connected",
   connecting: "Connecting bridge",
-  failed: "Bridge connection closed. Paste the bridge URL and connect again. If the process stopped, start a new one.",
+  failed:
+    "Bridge connection closed. Paste the bridge URL and connect again. If the process stopped, start a new one.",
   idle: "Bridge disconnected",
   invalid: "Enter the loopback URL from the bridge process.",
 };
 
-export const AgentConnections = ({ control, draft, hydrated, tools }: AgentConnectionsProps) => {
-  const grant = useRef<HTMLInputElement>(null);
+export const AgentConnections = ({
+  control,
+  draft,
+  hydrated,
+  tools,
+}: AgentConnectionsProps) => {
+  const grant = useRef(false);
   const socket = useRef<WebSocket | null>(null);
+  const [granted, setGranted] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>("idle");
   const [webMcpStatus, setWebMcpStatus] = useState("WebMCP unavailable");
 
@@ -38,11 +64,10 @@ export const AgentConnections = ({ control, draft, hydrated, tools }: AgentConne
     const activeTools = createDraftTools({
       getControl: () => control.current,
       getDraft: () => draft.current,
-      isGranted: () => grant.current?.checked === true,
-      setGrant: (granted) => {
-        if (grant.current !== null) {
-          grant.current.checked = granted;
-        }
+      isGranted: () => grant.current,
+      setGrant: (nextGranted) => {
+        grant.current = nextGranted;
+        setGranted(nextGranted);
       },
     });
     tools.current = activeTools;
@@ -94,7 +119,9 @@ export const AgentConnections = ({ control, draft, hydrated, tools }: AgentConne
     });
     connection.addEventListener("message", (message: MessageEvent<unknown>) => {
       if (socket.current === connection) {
-        void handleBridgeMessage(connection, activeTools, message.data).catch(() => connection.close());
+        void handleBridgeMessage(connection, activeTools, message.data).catch(
+          () => connection.close()
+        );
       }
     });
     connection.addEventListener("close", () => {
@@ -112,49 +139,81 @@ export const AgentConnections = ({ control, draft, hydrated, tools }: AgentConne
     setBridgeStatus("idle");
   };
 
-  const hasConnection = bridgeStatus === "connected" || bridgeStatus === "connecting";
+  const hasConnection =
+    bridgeStatus === "connected" || bridgeStatus === "connecting";
 
   return (
-    <details className={styles.connections}>
-      <summary>Agent connections</summary>
-      <label className={styles.connectionGrant}>
-        <input
-          autoComplete="off"
-          disabled={!hydrated}
-          onChange={(event) => {
-            if (!event.currentTarget.checked) {
-              tools.current?.cancelProtected();
-            }
-          }}
-          ref={grant}
-          type="checkbox"
-        />
-        Allow agents to edit the draft
-      </label>
-      <form className={styles.bridgeForm} onSubmit={connectBridge}>
-        <Field name="bridgeUrl">
-          <label htmlFor="agent-bridge-url">Bridge URL</label>
-          <Input
-            autoComplete="off"
-            className={styles.bridgeInput}
-            disabled={!hydrated || hasConnection}
-            id="agent-bridge-url"
-            name="bridgeUrl"
-            spellCheck={false}
-          />
-        </Field>
-        {hasConnection ? (
-          <Button className={styles.bridgeButton} onClick={disconnectBridge} type="button">
-            Disconnect bridge
-          </Button>
-        ) : (
-          <Button className={styles.bridgeButton} disabled={!hydrated} type="submit">
-            Connect bridge
-          </Button>
-        )}
-      </form>
-      <p aria-live="polite">{bridgeStatusText[bridgeStatus]}</p>
-      <p aria-live="polite">{webMcpStatus}</p>
-    </details>
+    <Collapsible className={styles.connections} disabled={!hydrated}>
+      <CollapsibleTrigger
+        className={styles.connectionsTrigger}
+        data-kind-trigger=""
+      >
+        <Icon name="agent" size={15} />
+        Agent connections
+        <Icon name="chevron-down" size={14} />
+      </CollapsibleTrigger>
+      <CollapsiblePanel keepMounted>
+        <div className={styles.connectionBody}>
+          <label className={styles.connectionGrant}>
+            <KindCheckbox
+              checked={granted}
+              data-agent-hidden=""
+              disabled={!hydrated}
+              onCheckedChange={(next) => {
+                const checked = next === true;
+                grant.current = checked;
+                setGranted(checked);
+                if (!checked) {
+                  tools.current?.cancelProtected();
+                }
+              }}
+            >
+              <KindCheckboxIndicator aria-hidden="true">✓</KindCheckboxIndicator>
+            </KindCheckbox>
+            Allow agents to edit the draft
+          </label>
+          <form className={styles.bridgeForm} onSubmit={connectBridge}>
+            <Field name="bridgeUrl">
+              <label className={styles.fieldLabel} htmlFor="agent-bridge-url">
+                Bridge URL
+              </label>
+              <Input
+                autoComplete="off"
+                className={styles.bridgeInput}
+                disabled={!hydrated || hasConnection}
+                id="agent-bridge-url"
+                name="bridgeUrl"
+                spellCheck={false}
+              />
+            </Field>
+            {hasConnection ? (
+              <button
+                className={styles.bridgeButton}
+                data-kind-button="secondary"
+                onClick={disconnectBridge}
+                type="button"
+              >
+                Disconnect bridge
+              </button>
+            ) : (
+              <button
+                className={styles.bridgeButton}
+                data-kind-button="primary"
+                disabled={!hydrated}
+                type="submit"
+              >
+                Connect bridge
+              </button>
+            )}
+          </form>
+          <p aria-live="polite" className={styles.connectionStatus}>
+            {bridgeStatusText[bridgeStatus]}
+          </p>
+          <p aria-live="polite" className={styles.connectionStatus}>
+            {webMcpStatus}
+          </p>
+        </div>
+      </CollapsiblePanel>
+    </Collapsible>
   );
 };

@@ -14,8 +14,6 @@ import { routeTree } from "./routeTree.gen";
 
 import appCss from "./styles/globals.css?url";
 
-const notFoundStyles =
-  "body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}";
 
 interface HeadMetadata {
   links: {
@@ -86,73 +84,23 @@ describe("root route", () => {
     }
 
     const { container } = render(createElement(NotFound));
-    const outer = container.querySelector<HTMLDivElement>("div");
     const heading = screen.getByRole("heading", { level: 1 });
     const subheading = screen.getByRole("heading", { level: 2 });
-    const style = container.querySelector("style");
+    const robots = document.querySelector<HTMLMetaElement>(
+      'meta[name="robots"]'
+    );
 
+    expect(container.querySelector("style")).toBeNull();
+    expect(container.querySelector("main")).not.toBeNull();
+    expect(
+      screen.queryByRole("region", { name: "Agent workspace" })
+    ).toBeNull();
+    expect(
+      screen.queryByRole("navigation", { name: "Workspace" })
+    ).toBeNull();
     expect(screen.getByText("404")).toBe(heading);
     expect(screen.getByText("This page could not be found.")).toBe(subheading);
-
-    expect({
-      heading: {
-        display: heading.style.display,
-        fontSize: heading.style.fontSize,
-        fontWeight: heading.style.fontWeight,
-        lineHeight: heading.style.lineHeight,
-        margin: heading.style.margin,
-        padding: heading.style.padding,
-        verticalAlign: heading.style.verticalAlign,
-      },
-      outer: {
-        alignItems: outer?.style.alignItems,
-        display: outer?.style.display,
-        flexDirection: outer?.style.flexDirection,
-        fontFamily: outer?.style.fontFamily,
-        height: outer?.style.height,
-        justifyContent: outer?.style.justifyContent,
-        textAlign: outer?.style.textAlign,
-      },
-      robots: document.querySelector<HTMLMetaElement>('meta[name="robots"]')
-        ?.content,
-      style: style?.textContent,
-      subheading: {
-        display: subheading.parentElement?.style.display,
-        fontSize: subheading.style.fontSize,
-        fontWeight: subheading.style.fontWeight,
-        lineHeight: subheading.style.lineHeight,
-        margin: subheading.style.margin,
-      },
-    }).toStrictEqual({
-      heading: {
-        display: "inline-block",
-        fontSize: "24px",
-        fontWeight: "500",
-        lineHeight: "49px",
-        margin: "0px 20px 0px 0px",
-        padding: "0px 23px 0px 0px",
-        verticalAlign: "top",
-      },
-      outer: {
-        alignItems: "center",
-        display: "flex",
-        flexDirection: "column",
-        fontFamily:
-          "system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji",
-        height: "100vh",
-        justifyContent: "center",
-        textAlign: "center",
-      },
-      robots: "noindex",
-      style: notFoundStyles,
-      subheading: {
-        display: "inline-block",
-        fontSize: "14px",
-        fontWeight: "400",
-        lineHeight: "49px",
-        margin: "0px",
-      },
-    });
+    expect(robots?.content).toBe("noindex");
   });
 
   it("renders the full document with the router", async () => {

@@ -72,13 +72,15 @@ const ICONS = {
 export type IconName = keyof typeof ICONS;
 
 interface IconProps {
+  className?: string;
   name: IconName;
   size?: number;
 }
 
-export const Icon = ({ name, size = 16 }: IconProps) => (
+export const Icon = ({ className, name, size = 16 }: IconProps) => (
   <svg
     aria-hidden="true"
+    className={className}
     fill="none"
     focusable="false"
     height={size}

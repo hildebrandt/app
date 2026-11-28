@@ -1,10 +1,13 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import {
+  NoticeDescription,
+  NoticeRoot,
+  NoticeTitle,
+} from "../components/ui/notice";
+import styles from "../styles/kind-app.module.css";
 import appCss from "../styles/globals.css?url";
-
-const notFoundStyles =
-  "body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}";
 
 const RootDocument = ({ children }: { children: ReactNode }) => (
   <html lang="en">
@@ -21,48 +24,22 @@ const RootDocument = ({ children }: { children: ReactNode }) => (
 const NotFound = () => (
   <>
     <meta name="robots" content="noindex" />
-    <div
-      style={{
-        fontFamily:
-          'system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji"',
-        height: "100vh",
-        textAlign: "center",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div>
-        <style>{notFoundStyles}</style>
-        <h1
-          className="next-error-h1"
-          style={{
-            display: "inline-block",
-            margin: "0 20px 0 0",
-            padding: "0 23px 0 0",
-            fontSize: "24px",
-            fontWeight: 500,
-            verticalAlign: "top",
-            lineHeight: "49px",
-          }}
+    <main className={styles.notFound}>
+      <div className={styles.notFoundPanel}>
+        <p className={styles.notFoundCode}>Error 404</p>
+        <h1 className={styles.notFoundTitle}>404</h1>
+        <h2 className={styles.notFoundHeading}>This page could not be found.</h2>
+        <NoticeRoot
+          className={`${styles.notice} ${styles.notFoundNotice}`}
+          label="Page not found"
         >
-          404
-        </h1>
-        <div style={{ display: "inline-block" }}>
-          <h2
-            style={{
-              fontSize: "14px",
-              fontWeight: 400,
-              lineHeight: "49px",
-              margin: 0,
-            }}
-          >
-            This page could not be found.
-          </h2>
-        </div>
+          <NoticeTitle />
+          <NoticeDescription>
+            The page you requested does not exist.
+          </NoticeDescription>
+        </NoticeRoot>
       </div>
-    </div>
+    </main>
   </>
 );
 

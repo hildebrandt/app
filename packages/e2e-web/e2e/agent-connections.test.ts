@@ -240,7 +240,9 @@ const openAgentConnections = async (page: Page, value: string) => {
   await page.goto("/");
   const draft = page.getByRole("textbox", { name: "Ask Agent" });
   await draft.fill(value);
-  await page.getByText("Agent connections", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Agent connections", exact: true })
+    .click();
   const grant = page.getByRole("checkbox", {
     name: "Allow agents to edit the draft",
   });
@@ -288,7 +290,9 @@ test("the external bridge and native WebMCP share draft access and undo", async 
   await page.goto("/");
   const draft = page.getByRole("textbox", { name: "Ask Agent" });
   await draft.fill(initialDraft);
-  await page.getByText("Agent connections", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Agent connections", exact: true })
+    .click();
   const grant = page.getByRole("checkbox", {
     name: "Allow agents to edit the draft",
   });

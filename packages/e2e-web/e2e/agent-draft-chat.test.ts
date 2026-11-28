@@ -29,6 +29,10 @@ function draftOutcome(page: Page) {
 	return page.locator("p[role='status']");
 }
 
+function workspaceAlert(page: Page) {
+	return page.getByRole("region", { name: "Agent workspace" }).getByRole("alert");
+}
+
 type GateWindow = Window & {
 	__draftContinuationBlocked?: boolean;
 	__draftContinuationOutcome?: "aborted" | "forwarded" | null;
@@ -112,7 +116,9 @@ async function waitForContinuationOutcome(page: Page) {
 async function openWorkspace(page: Page, pair: DraftChatPair) {
 	await installContinuationGate(page);
 	await page.goto(pair.webUrl);
-	await page.locator("summary").filter({ hasText: "Agent connections" }).click();
+	await page
+		.getByRole("button", { name: "Agent connections", exact: true })
+		.click();
 	const grant = page.getByRole("checkbox", {
 		name: "Allow agents to edit the draft",
 	});
@@ -361,7 +367,7 @@ test("Stop after the edit commits keeps the change but starts no provider run", 
 	).toBeEnabled();
 	await expect(footerStatus(page)).toHaveText("Response stopped");
 	await expect(draftOutcome(page)).toHaveText(/^Draft changed\./);
-	await expect(page.getByRole("alert")).toHaveCount(0);
+	await expect(workspaceAlert(page)).toHaveCount(0);
 	await expect(page.getByRole("button", { name: "Retry", exact: true })).toHaveCount(0);
 
 	expect(pair.posts).toHaveLength(1);
@@ -383,7 +389,7 @@ test("losing the continuation acknowledgement reports the lost confirmation and 
 	await continuation.ackLost;
 
 	await expect(footerStatus(page)).toHaveText("");
-	await expect(page.getByRole("alert")).toHaveText(
+	await expect(workspaceAlert(page)).toHaveText(
 		"Could not confirm the response after the draft action. Check the draft before starting a new turn.",
 	);
 	await expect(page.getByRole("button", { name: "Retry", exact: true })).toHaveCount(0);

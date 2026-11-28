@@ -449,8 +449,12 @@ class ScriptedTransport {
 	}
 
 	async fetch(request: Request): Promise<Response> {
-		const index = this.posts.length + 1;
 		const url = new URL(request.url);
+		// Other traffic still reaches the real handler, but is not a chat POST.
+		if (request.method !== "POST" || url.pathname !== "/api/chat") {
+			return this.handler(request);
+		}
+		const index = this.posts.length + 1;
 		const rawBody = await request.clone().text();
 		let body: ChatBody = {};
 		try {

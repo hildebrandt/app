@@ -1,4 +1,15 @@
 {
   "extends": "@repo/typescript-config/tanstack.json",
-  "include": ["src", "vite.config.ts", "start.mjs"]
+  "compilerOptions": {
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "vite.config.ts",
+    "start.mjs"
+  ]
 }

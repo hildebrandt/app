@@ -143,7 +143,8 @@ describe("home route", () => {
     fireEvent.input(composer, { target: { value: "Try again" } });
     fireEvent.submit(form);
 
-    const alert = await screen.findByRole("alert");
+    const workspace = screen.getByRole("region", { name: "Agent workspace" });
+    const alert = await within(workspace).findByRole("alert");
 
     expect(alert.textContent).toBe("Chat is unavailable. Try again.");
     expect(screen.queryByText(/provider refused/u)).toBeNull();

@@ -1,5 +1,8 @@
 @layer ui-sdk;
 
+@import "tailwindcss";
+@import "@kind-ui/agent-ui/styles.css";
+
 /* Typography — .agents/DESIGN.md */
 
 /* Display family: Manrope */
@@ -46,6 +49,7 @@
 }
 
 :root {
+  color-scheme: dark;
   --font-display:
     "Manrope", "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto,
     sans-serif;
@@ -53,15 +57,48 @@
     "Inter", "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto,
     sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background: #010102;
+  --foreground: #f7f8f8;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* KindUI theme: near-black canvas, charcoal surfaces and one restrained accent. */
+  --kind-color-fg: #f7f8f8;
+  --kind-color-muted: #8a8f98;
+  --kind-color-canvas: #010102;
+  --kind-color-surface: #0f1011;
+  --kind-color-raised: #141516;
+  --kind-color-hover: rgb(255 255 255 / 0.055);
+  --kind-color-pressed: rgb(255 255 255 / 0.09);
+  --kind-color-selected: rgb(94 106 210 / 0.16);
+  --kind-color-current: #191a1b;
+  --kind-color-bubble: #18191a;
+  --kind-color-scrim: rgb(0 0 0 / 0.74);
+  --kind-color-hairline: #23252a;
+  --kind-color-border: #34343a;
+  --kind-color-ring: #5e69d1;
+  --kind-color-focus: #5e69d1;
+  --kind-color-shadow: #000000;
+  --kind-color-primary: #5e6ad2;
+  --kind-color-primary-hover: #828fff;
+  --kind-color-primary-fg: #ffffff;
+  --kind-color-accent: #5e6ad2;
+  --kind-color-accent-hover: #828fff;
+  --kind-color-on-accent: #ffffff;
+  --kind-color-on-status: #ffffff;
+  --kind-color-on-warning: #010102;
+  --kind-color-success: #27a644;
+  --kind-color-warning: #f5a623;
+  --kind-color-danger: #e5484d;
+
+  --kind-font-sans: var(--font-text);
+  --kind-font-mono: var(--font-mono);
+  --kind-radius: 8px;
+  --kind-focus-ring-width: 2px;
+  --kind-focus-ring: 2px solid var(--kind-color-focus);
+  --kind-focus-offset: 2px;
+  --kind-shadow-control: none;
+  --kind-shadow-popover: 0 0 0 1px var(--kind-color-hairline);
+  --kind-shadow-dialog: 0 0 0 1px var(--kind-color-border);
+  --kind-shadow-composer: 0 0 0 1px var(--kind-color-hairline);
 }
 
 html,
@@ -78,6 +115,8 @@ body {
   letter-spacing: -0.05px;
   color: var(--foreground);
   background: var(--background);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
@@ -123,8 +162,25 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+::selection {
+  background: var(--kind-color-selected);
+  color: var(--kind-color-fg);
+}
+
+/* Keyboard focus is visible on controls. Text fields keep the caret as their only focus cue. */
+:where(button, a, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--kind-color-focus);
+  outline-offset: 2px;
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  [contenteditable="true"]):focus-visible {
+  outline: none;
+}
+
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 2px solid var(--kind-color-focus);
+  outline-offset: 2px;
 }
