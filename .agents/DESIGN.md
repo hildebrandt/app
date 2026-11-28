@@ -265,6 +265,7 @@ Display type runs Manrope sans (with `SF Pro Display` fallback) at weight 500–
 The page rhythm is **dense product screenshots** — marketing leads with high-fidelity captures of the product UI (issue list, project view, dashboard) framed in `{colors.surface-1}` panels with `{rounded.xl}` 16px corners. The chrome is intentionally minimal so the app screenshots can do the heavy lifting.
 
 **Key Characteristics:**
+
 - **Dark-canvas marketing system** — `{colors.canvas}` (#010102) is the deepest dark in this collection.
 - **Lavender-blue brand accent** (`{colors.primary}` #5e6ad2) — used scarcely on brand mark, focus, and the primary CTA.
 - Four-step surface ladder (canvas → surface-1 → surface-2 → surface-3 → surface-4) carries hierarchy without shadow.
@@ -276,12 +277,14 @@ The page rhythm is **dense product screenshots** — marketing leads with high-f
 ## Colors
 
 ### Brand & Accent
+
 - **Lavender-Blue** ({colors.primary}): The signature accent — primary CTA, brand mark, link emphasis.
 - **Lavender Hover** ({colors.primary-hover}): Lighter lavender (#828fff) — hovered state of the primary CTA.
 - **Lavender Focus** ({colors.primary-focus}): Focus-ring tint (#5e69d1) — focused inputs, focused buttons.
 - **Brand Secure** ({colors.brand-secure}): Muted lavender-gray (#7a7fad) — used in "Security" surfaces.
 
 ### Surface
+
 - **Canvas** ({colors.canvas}): Default page background — #010102, near-pure black with a faint blue tint.
 - **Surface 1** ({colors.surface-1}): One step above canvas — feature cards, pricing cards, product screenshot panels.
 - **Surface 2** ({colors.surface-2}): Two steps above — featured pricing card, hovered cards.
@@ -295,12 +298,14 @@ The page rhythm is **dense product screenshots** — marketing leads with high-f
 - **Inverse Surface 2** ({colors.inverse-surface-2}): Two steps above inverse canvas.
 
 ### Text
+
 - **Ink** ({colors.ink}): All headlines and emphasized body type — light gray #f7f8f8.
 - **Ink Muted** ({colors.ink-muted}): Secondary type at #d0d6e0 — meta info on hero panels.
 - **Ink Subtle** ({colors.ink-subtle}): Tertiary type at #8a8f98 — deselected pricing tabs, footer columns.
 - **Ink Tertiary** ({colors.ink-tertiary}): Quaternary at #62666d — disabled, footnotes.
 
 ### Semantic
+
 - **Success Green** ({colors.semantic-success}): Status pills, success indicators. The only semantic color on marketing.
 - **Overlay** ({colors.semantic-overlay}): Pure black overlay scrim for modals.
 
@@ -404,71 +409,177 @@ Depth is carried by surface ladder + hairline borders. The brand resists drop sh
 ### Buttons
 
 **`button-primary`** — Lavender CTA. The default primary CTA across all pages.
+
 - Background `{colors.primary}`, text `{colors.on-primary}`, type `{typography.button}`, padding 8px 14px, rounded `{rounded.md}`.
 - Pressed state lives in `button-primary-pressed` (background shifts to `{colors.primary-focus}`).
 - Hover state lives in `button-primary-hover` (background shifts to `{colors.primary-hover}` lighter lavender).
 
 **`button-secondary`** — Charcoal button. Used for secondary CTAs ("Sign in", "Read changelog").
+
 - Background `{colors.surface-1}`, text `{colors.ink}`, type `{typography.button}`, padding 8px 14px, rounded `{rounded.md}`. 1px `{colors.hairline}` border.
 
 **`button-tertiary`** — Plain text button.
+
 - Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.button}`, rounded `{rounded.md}`, padding 8px 14px.
 
 **`button-inverse`** — White-on-dark inverse CTA.
+
 - Background `{colors.inverse-canvas}`, text `{colors.inverse-ink}`, type `{typography.button}`, rounded `{rounded.md}`, padding 8px 14px.
 
 ### Pricing Tabs
 
 **`pricing-tab-default`** + **`pricing-tab-selected`** — Pill-toggle on `/pricing`.
+
 - Default: `{colors.canvas}` background, `{colors.ink-subtle}` text, rounded `{rounded.pill}`, padding 6px 14px.
 - Selected: `{colors.surface-2}` background, `{colors.ink}` text — selected = surface lift.
 
 ### Cards & Containers
 
 **`pricing-card`** — Each tier on `/pricing`.
+
 - Background `{colors.surface-1}`, text `{colors.ink}`, type `{typography.body}`, rounded `{rounded.lg}`, padding 24px. 1px `{colors.hairline}` border.
 
 **`pricing-card-featured`** — Recommended tier — surface lift to surface-2.
+
 - Background `{colors.surface-2}`, otherwise identical structure.
 
 **`feature-card`** — Generic feature highlight tile.
+
 - Background `{colors.surface-1}`, text `{colors.ink}`, type `{typography.body}`, rounded `{rounded.lg}`, padding 24px.
 
 **`product-screenshot-card`** — The dominant card type — frames a high-fidelity app UI screenshot.
+
 - Background `{colors.surface-1}`, text `{colors.ink}`, type `{typography.body}`, rounded `{rounded.xl}`, padding 24px.
 
 **`testimonial-card`** — Customer quote with avatar + name + role.
+
 - Background `{colors.surface-1}`, text `{colors.ink}`, type `{typography.body-lg}`, rounded `{rounded.lg}`, padding 32px.
 
 **`customer-logo-tile`** — Small tile in the customer marquee.
+
 - Background `{colors.canvas}`, text `{colors.ink-subtle}`, type `{typography.caption}`, rounded `{rounded.xs}`, padding 16px.
 
 **`cta-banner`** — Closing CTA panel near page bottom.
+
 - Background `{colors.surface-1}`, text `{colors.ink}`, type `{typography.headline}`, rounded `{rounded.lg}`, padding 48px.
 
 ### Inputs & Forms
 
 **`text-input`** + **`text-input-focused`** — Form fields on `/contact/sales` and signup overlays.
+
 - Background `{colors.surface-1}`, text `{colors.ink}`, type `{typography.body}`, rounded `{rounded.md}`, padding 8px 12px.
 - Focused state retains the same surface; the focus ring is a 2px `{colors.primary-focus}` outline at 50% opacity.
 
 ### Status & Build Page
 
 **`changelog-row`** — Each row in `/build` (changelog page) listing version, date, and changes.
+
 - Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.body}`, rounded `{rounded.xs}`, padding 24px 0. 1px `{colors.hairline}` bottom rule.
 
 **`status-badge`** — Small status pill.
+
 - Background `{colors.surface-2}`, text `{colors.ink-muted}`, type `{typography.caption}`, rounded `{rounded.pill}`, padding 2px 8px.
 
 ### Navigation
 
 **`top-nav`** — Sticky dark bar with the wordmark left, primary nav links centered, and a `button-secondary` ("Sign in") + `button-primary` ("Get started") pair right.
+
 - Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.body-sm}`, height 56px.
 
 ### Footer
 
 **`footer`** — Dense link grid on `{colors.canvas}` with the wordmark left.
+
 - Background `{colors.canvas}`, text `{colors.ink-subtle}`, type `{typography.caption}`, padding 64px 32px.
+
+## Icons
+
+Lucide is the only UI icon source: static glyphs from `lucide-react`, one state animation from Lucide Animated. The retained `public/favicon.ico` is the only exception; do not add another icon set, hand-drawn SVG, or icon font.
+
+### Install
+
+Install once per importing workspace, never at the repo root:
+
+```bash
+pnpm --filter web add lucide-react
+pnpm --filter web add motion
+```
+
+`web` is the only workspace with icons today; another workspace runs `pnpm add lucide-react` itself. Lucide Animated needs `motion`; import it from `motion/react` and do not add `framer-motion` directly.
+
+### Lucide Animated
+
+Run from `apps/web`:
+
+```bash
+pnpm dlx shadcn@latest add https://lucide-animated.com/r/loader-circle.json --path src/components/icons --yes
+```
+
+The registry item declares `dependencies: ["motion"]` and writes `apps/web/src/components/icons/loader-circle.tsx`. Its source is `https://lucide-animated.com/r/loader-circle.json` from `https://github.com/pqoqubbw/icons`; edit the vendored file, not a fresh copy. The app adapts it to a `spinning` prop driven by run state, never hover.
+
+### Imports and Naming
+
+```ts
+import { ArrowUp, FileText, Search } from "lucide-react";
+```
+
+Named imports only. Shared route chrome uses `apps/web/src/routes/-agent-icon.tsx`: add a glyph to `ICONS` (which derives `IconName`) and render `<Icon name="..." size={16} />`. A component may import directly when the glyph belongs to it, as the suggestion chevrons and checkbox `Check` do.
+
+### Semantics
+
+| Meaning | Icon |
+| --- | --- |
+| Agent identity | `Send` (`Icon name="agent"`) |
+| Submit | `ArrowUp` |
+| Expand/collapse | `ChevronDown` |
+| Time | `Clock` |
+| Dismiss/close | `X` |
+| Project/artifact | `Box` (`Icon name="cube"`) |
+| Document | `FileText` |
+| Inbox | `Inbox` |
+| Create/add | `Plus` |
+| Search | `Search` |
+| Team/people | `Users` |
+| Checked | `Check` |
+| Previous/next | `ChevronLeft`, `ChevronRight` |
+| Run status | `CircleDashed`, `CircleDot`, `CircleCheck`, `CircleX`, `CircleMinus`; running uses `LoaderCircleIcon` |
+
+One glyph, one meaning; the label must agree. `X` means dismiss, never "no". Approval decisions stay words. If no Lucide glyph fits, ask before adding a custom path.
+
+### Size and Color
+
+- 16px default; 14px compact metadata; 12px check inside a 16px box; 16px status mark. Never let Lucide's 24px or upstream 28px default into app chrome.
+- `Icon` uses stroke 1.6; direct Lucide imports keep 2 unless replacing a 1.6-stroke control. Do not mix weights in one control.
+- Icons inherit `currentColor` from the control or status token. Use semantic fill and stroke tokens for filled status marks; never hardcode colors.
+
+### Accessibility
+
+- Hide decorative icons with `aria-hidden="true"`; `Icon` also sets `focusable="false"`. Put the accessible name on the control, not the SVG, and never leave an icon-only action unnamed.
+- Do not put `tabIndex` on an icon; focus stays on the button or link.
+- Preserve each control's existing hit area and grow to the `Touch Targets` minimum on touch. Center the glyph instead of enlarging it.
+- Approvals and destructive actions show visible text; an icon may reinforce but never carries the decision. Status and outcome never rely on color alone; the status mark is decorative and the visible label states the status.
+
+### Motion and Reduced Motion
+
+- Animate only for real state: the loader spins while the agent is responding. Hover, focus, and press never start it.
+- Use `motion/react` for icon motion; do not duplicate it with CSS keyframes.
+- `LoaderCircleIcon` reads `prefers-reduced-motion` itself; the caller still supplies `spinning` for a responding state. Under reduced motion it shows the same static geometry and keeps the text label. Server and first render are static; animation starts only after hydration confirms the preference.
+- Surrounding transitions stop under `@media (prefers-reduced-motion: reduce)`.
+
+### Licenses and Notices
+
+- `lucide-react` ships the Lucide ISC license and Feather MIT license in its installed `LICENSE`.
+- Lucide Animated is MIT (Copyright 2024-2026 pqoqubbw), built on Lucide's ISC and Feather MIT paths.
+- Keep the full MIT and ISC texts in the vendored `loader-circle.tsx` header; do not strip notices when adapting. Sources: the registry URL, `https://github.com/pqoqubbw/icons/blob/main/LICENSE`, and `lucide-react`'s `LICENSE`.
+- Keep the icon notices in `apps/web/public/THIRD_PARTY_NOTICES.txt` with the deployed client. The minified bundle does not retain all source notices.
+
+### Ownership
+
+- `apps/web/src/routes/-agent-icon.tsx`: `Icon`, `IconName`, `ICONS`.
+- `apps/web/src/components/icons/loader-circle.tsx`: `LoaderCircleIcon`, `spinning`, inline notices.
+- `apps/web/src/components/ui/status.tsx`: `Status`, `StatusLabel`, `StatusMark`, `markFor`; `status.module.css`: mark size and colors.
+- Direct imports: `suggestion.tsx` (`ChevronLeft`/`ChevronRight`) and `-agent-connections.tsx` (`Check`). `kind-app.module.css` suppresses the vendor pseudo send glyph for `ArrowUp`.
+- `apps/web/public/favicon.ico` is the retained exception; no starter SVGs remain. Change a glyph at its owner; do not fork the map.
 
 ## Do's and Don'ts
 

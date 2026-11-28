@@ -588,6 +588,11 @@
   transition: background 120ms ease;
 }
 
+/* The composer's submit slot draws its own send glyph in ::before; this submit renders a Lucide arrow instead. */
+.submitButton::before {
+  content: none;
+}
+
 .submitButton:hover {
   background: var(--kind-color-primary-hover);
 }

@@ -5,6 +5,7 @@ import {
 } from "@ui-sdk/react/collapsible";
 import { Field } from "@ui-sdk/react/field";
 import { Input } from "@ui-sdk/react/input";
+import { Check } from "lucide-react";
 import {
   type FormEvent,
   type RefObject,
@@ -168,7 +169,9 @@ export const AgentConnections = ({
                 }
               }}
             >
-              <KindCheckboxIndicator aria-hidden="true">✓</KindCheckboxIndicator>
+              <KindCheckboxIndicator aria-hidden="true">
+                <Check aria-hidden="true" />
+              </KindCheckboxIndicator>
             </KindCheckbox>
             Allow agents to edit the draft
           </label>

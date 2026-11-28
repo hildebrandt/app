@@ -1,0 +1,47 @@
+.mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 16px;
+  block-size: 16px;
+  color: var(--kind-color-muted);
+}
+
+.mark[data-status="pending"] {
+  color: color-mix(in oklab, var(--kind-color-muted) 80%, transparent);
+}
+
+.mark[data-status="cancelled"] {
+  color: var(--kind-color-muted);
+}
+
+.mark > svg {
+  display: block;
+}
+
+.mark[data-status="running"] {
+  color: var(--kind-color-accent);
+}
+
+.mark[data-status="awaiting-input"] {
+  color: var(--kind-color-warning);
+}
+
+.mark[data-status="complete"] {
+  color: var(--kind-color-on-status);
+}
+
+.mark[data-status="complete"] > svg circle {
+  fill: var(--kind-status-mark-complete, var(--kind-color-success));
+  stroke: var(--kind-status-mark-complete, var(--kind-color-success));
+}
+
+.mark[data-status="error"] {
+  color: var(--kind-color-on-status);
+}
+
+.mark[data-status="error"] > svg circle {
+  fill: var(--kind-color-danger);
+  stroke: var(--kind-color-danger);
+}

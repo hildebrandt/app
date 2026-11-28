@@ -2,6 +2,7 @@
 
 import { suggestionPrimitive } from "@kind-ui/agent-ui/core";
 import { createParts } from "@ui-sdk/react/primitive";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import {
   KindCarousel,
@@ -13,18 +14,6 @@ import {
 } from "./internal/carousel";
 
 const parts = createParts(suggestionPrimitive, { root: "div", item: "button" });
-
-// Lucide "chevron-left" and "chevron-right", see THIRD_PARTY_NOTICES.md.
-const CHEVRON_LEFT = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-    <path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const CHEVRON_RIGHT = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-    <path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
 
 export type SuggestionProps = Omit<ComponentProps<typeof parts.Root>, "children"> & {
   children?: ReactNode;
@@ -131,7 +120,7 @@ export function SuggestionControls({
 
 /** Scrolls back to earlier suggestions. Put it in `SuggestionControls` to hide it while every suggestion fits. */
 export function SuggestionPrevious({
-  children = CHEVRON_LEFT,
+  children = <ChevronLeft aria-hidden="true" />,
   ...props
 }: ComponentProps<typeof KindCarouselPrevious>) {
   return (
@@ -143,7 +132,7 @@ export function SuggestionPrevious({
 
 /** Scrolls on to later suggestions. Put it in `SuggestionControls` to hide it while every suggestion fits. */
 export function SuggestionNext({
-  children = CHEVRON_RIGHT,
+  children = <ChevronRight aria-hidden="true" />,
   ...props
 }: ComponentProps<typeof KindCarouselNext>) {
   return (
