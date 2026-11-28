@@ -225,10 +225,10 @@ export const AgentWorkspace = () => {
 
         <div className={styles.profile}>
           <Avatar aria-hidden="true" className={styles.avatar}>
-            <AvatarFallback>CM</AvatarFallback>
+            <AvatarFallback>MM</AvatarFallback>
           </Avatar>
           <span className={styles.profileText}>
-            <span className={styles.profileName}>Code Match GmbH</span>
+            <span className={styles.profileName}>Max Mustermann</span>
           </span>
           <Icon
             className={styles.profileChevron}
@@ -442,10 +442,6 @@ export const AgentWorkspace = () => {
         </section >
 
         <footer className={styles.statusBar}>
-          <span className={styles.statusLabel}>
-            <Icon name="agent" size={14} />
-            Agent
-          </span>
           <span className={styles.statusMessage} role="status">
             {chat.responding || chat.stopped ? (
               <Status
@@ -458,6 +454,10 @@ export const AgentWorkspace = () => {
           </span>
           <span aria-hidden="true" className={styles.statusClock}>
             <Icon name="clock" size={14} />
+          </span>
+          <span className={styles.statusLabel}>
+            <Icon name="agent" size={14} />
+            Agent
           </span>
         </footer>
       </main >
