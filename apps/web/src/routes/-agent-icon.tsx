@@ -5,9 +5,11 @@ import {
   Clock,
   FileText,
   Inbox,
+  Moon,
   Plus,
   Search,
   Send,
+  Sun,
   Users,
   X,
   type LucideIcon,
@@ -22,8 +24,10 @@ const ICONS = {
   cube: Box,
   document: FileText,
   inbox: Inbox,
+  moon: Moon,
   plus: Plus,
   search: Search,
+  sun: Sun,
   users: Users,
 } satisfies Record<string, LucideIcon>;
 

@@ -50,6 +50,9 @@ test.describe("agent chat transport outcomes", () => {
     const partial = "Partial answer retained.";
     const late = "LATE TEXT MUST NOT APPEAR";
     const followUp = "Follow-up answer after stop.";
+    const firstLine = "First prompt";
+    const secondLine = "with a second line";
+    const firstPrompt = `${firstLine}\n${secondLine}`;
 
     const scenarios: Scenario[] = [
       {
@@ -70,7 +73,15 @@ test.describe("agent chat transport outcomes", () => {
     await chatPair.control.reset(scenarios);
     await openChat(page, chatPair);
 
-    await sendPrompt(page, "First prompt");
+    await composer(page).fill(firstLine);
+    await page.keyboard.press("Shift+Enter");
+    await expect(composer(page)).toHaveValue(`${firstLine}\n`);
+    await expect(userMessages(page)).toHaveCount(0);
+    await page.keyboard.type(secondLine);
+    await expect(composer(page)).toHaveValue(firstPrompt);
+    await page.keyboard.press("Enter");
+    await expect(composer(page)).toHaveValue("");
+    await expect(userMessages(page)).toHaveCount(1);
     await expect(page.getByText(partial, { exact: true })).toBeVisible();
     await expect(stopButton(page)).toBeVisible();
     await expect(status(page)).toHaveText("Agent is responding");
@@ -112,15 +123,15 @@ test.describe("agent chat transport outcomes", () => {
     const stateRuns = await runs(chatPair);
     expect(stateRuns).toHaveLength(2);
     expect(stateRuns[0]?.messages.map((message) => message.content)).toEqual([
-      "First prompt",
+      firstPrompt,
     ]);
     expect(stateRuns[1]?.messages.map((message) => message.content)).toEqual([
-      "First prompt",
+      firstPrompt,
       partial,
       "Second prompt",
     ]);
     await expect(userMessages(page)).toHaveCount(2);
-    await expect(userMessages(page).nth(0)).toContainText("First prompt");
+    await expect(userMessages(page).nth(0)).toContainText(firstPrompt);
     await expect(userMessages(page).nth(1)).toContainText("Second prompt");
   });
 

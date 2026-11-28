@@ -12,7 +12,7 @@ import { Button } from "@ui-sdk/react/button";
 import { Field } from "@ui-sdk/react/field";
 import { createParts } from "@ui-sdk/react/primitive";
 import { Textarea } from "@ui-sdk/react/textarea";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import {
   NoticeActions,
@@ -90,12 +90,28 @@ const OUTCOME_STATUS = {
   unknown: "error",
 } as const;
 
+const DARK_MODE_QUERY = "(prefers-color-scheme: dark)";
+
+const subscribeToSystemTheme = (onChange: () => void) => {
+  const query = window.matchMedia?.(DARK_MODE_QUERY);
+  query?.addEventListener("change", onChange);
+  return () => query?.removeEventListener("change", onChange);
+};
+
 export const AgentWorkspace = () => {
   const hydrated = useHydrated();
   const [threadId] = useState(() => generateMessageId());
   const [draft, setDraft] = useState("");
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [showExamples, setShowExamples] = useState(true);
+  const [colorMode, setColorMode] = useState<"light" | "dark">();
+  const systemIsDark = useSyncExternalStore(
+    subscribeToSystemTheme,
+    () => window.matchMedia?.(DARK_MODE_QUERY).matches ?? false,
+    () => false
+  );
+  const isDark = colorMode === undefined ? systemIsDark : colorMode === "dark";
+  const nextColorMode = isDark ? "light" : "dark";
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const currentDraft = useRef("");
   const draftTools = useRef<DraftTools | null>(null);
@@ -156,6 +172,7 @@ export const AgentWorkspace = () => {
     return submitted;
   };
 
+
   const stopResponse = () => {
     chat.stopResponse();
     focusComposer();
@@ -178,7 +195,7 @@ export const AgentWorkspace = () => {
   };
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-color-mode={colorMode}>
       <aside className={styles.sidebar}>
         <nav aria-label="Workspace" className={styles.nav}>
           {NAV_ITEMS.map((item) => {
@@ -288,6 +305,7 @@ export const AgentWorkspace = () => {
                       readOnly={!hydrated}
                       ref={inputRef}
                       rows={2}
+                      submitShortcut="enter"
                       value={draft}
                     />
                   </Field>
@@ -423,10 +441,6 @@ export const AgentWorkspace = () => {
         </section>
 
         <footer className={styles.statusBar}>
-          <span className={styles.statusLabel}>
-            <Icon name="agent" size={14} />
-            Agent
-          </span>
           <span className={styles.statusMessage} role="status">
             {chat.responding || chat.stopped ? (
               <Status
@@ -436,6 +450,19 @@ export const AgentWorkspace = () => {
                 status={chat.responding ? "running" : "cancelled"}
               />
             ) : null}
+          </span>
+          <Button
+            aria-label={`Switch to ${nextColorMode} mode`}
+            className={styles.themeButton}
+            disabled={!hydrated}
+            onClick={() => setColorMode(nextColorMode)}
+            type="button"
+          >
+            <Icon name={isDark ? "sun" : "moon"} size={14} />
+          </Button>
+          <span className={styles.statusLabel}>
+            <Icon name="agent" size={14} />
+            Agent
           </span>
           <span aria-hidden="true" className={styles.statusClock}>
             <Icon name="clock" size={14} />

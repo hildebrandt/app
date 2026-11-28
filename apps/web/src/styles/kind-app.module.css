@@ -177,8 +177,8 @@
   overflow: hidden;
   border: 1px solid var(--kind-color-border);
   border-radius: 999px;
-  background: var(--kind-color-bubble);
-  color: var(--kind-color-fg);
+  background: var(--kind-color-primary);
+  color: var(--kind-color-primary-fg);
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
@@ -630,6 +630,7 @@
   flex: 0 0 28px;
   align-items: center;
   gap: 12px;
+  min-inline-size: 0;
   padding-inline: 10px 15px;
   color: var(--kind-color-muted);
   font-size: 12px;
@@ -637,6 +638,7 @@
 
 .statusLabel {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 5px;
 }
@@ -644,13 +646,62 @@
 .statusMessage {
   display: inline-flex;
   align-items: center;
+  min-inline-size: 0;
   min-block-size: 18px;
-  color: var(--kind-color-muted);
   margin-inline-end: auto;
+  overflow: hidden;
+  color: var(--kind-color-muted);
+  white-space: nowrap;
+}
+
+.statusMessage>* {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * Compact icon toggle for the footer: a 24px target keeps the 28px status bar
+ * from growing while meeting the minimum target size. The label is supplied by
+ * the control; keyboard focus uses the global focus-visible ring.
+ */
+.themeButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--kind-color-muted);
+  cursor: pointer;
+  transition: background-color var(--control-transition), color var(--control-transition);
+}
+
+.themeButton:not(:disabled):not([aria-disabled="true"]):hover {
+  background: var(--kind-color-hover);
+  color: var(--kind-color-fg);
+}
+
+.themeButton:not(:disabled):not([aria-disabled="true"]):active {
+  background: var(--kind-color-current);
+}
+
+.themeButton svg {
+  display: block;
+}
+
+.themeButton:disabled,
+.themeButton[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.5;
 }
 
 .statusClock {
   display: inline-flex;
+  flex: none;
   align-items: center;
   color: var(--kind-color-muted);
 }

@@ -1,8 +1,10 @@
 # web
 
 The home page is an Agent workspace. Select an example to start an editable
-draft, or enter a prompt in **Ask Agent** and select **Submit prompt**. The
-workspace follows the system color scheme.
+draft, or enter a prompt in **Ask anything**. Press **Enter** or select
+**Submit prompt** to send it. Press **Shift+Enter** to insert a new line.
+The workspace follows the system color scheme until you use the light or dark
+mode button in the footer.
 
 Select **Stop** to cancel a response. The workspace keeps the text already
 received and any draft you entered while the agent was responding. For an
