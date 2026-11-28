@@ -150,19 +150,21 @@ required. Run these steps from the repository root.
    bridge as a separate Node process. Keep port 3000 free for this run.
 3. For a manual external call, start `pnpm --filter web dev` in one terminal
    and `node apps/web/scripts/agent-bridge.mjs http://127.0.0.1:3000` in another.
-   Open <http://127.0.0.1:3000>, expand **Agent connections**, and paste the
+   Open <http://127.0.0.1:3000>, select the **Max Mustermann** profile at the
+   bottom of the sidebar to open **Agent connections**, and paste the
    `url` from the `ready` message into **Bridge URL**. Select **Connect bridge**.
    Treat the URL as a pairing secret. Send one JSON request per line to the
    bridge process. `{"id":1,"method":"tools/list"}` lists the tools.
-4. Enter a value in the **Ask Agent** textbox. Check **Allow agents to edit the
-   draft** and send
+4. Enter a value in the **Ask Agent** textbox. Select the **Max Mustermann**
+   profile again, check **Allow agents to edit the draft**, and send
    `{"id":2,"method":"tools/call","name":"set_draft","arguments":{"value":"Plan a launch"}}`.
    Check the event and the visible value. Send
    `{"id":3,"method":"tools/call","name":"undo_draft","arguments":{}}`
    and check that the initial value returns. In a WebMCP-enabled Chromium
    client, invoke the same tool names and argument objects. The scenario in
    step 2 shows how to discover and invoke them through native CDP.
-5. Uncheck the grant and send the exact `set_draft` call again with a new
+5. Select the **Max Mustermann** profile, uncheck the grant, and send the exact
+   `set_draft` call again with a new
    request ID. Check for `permission_denied` and an unchanged textarea. Try
    the same tool and arguments through WebMCP. Disconnect the bridge when
    finished. The grant and undo slot are not stored across page loads.

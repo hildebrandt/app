@@ -112,17 +112,24 @@ async function waitForContinuationOutcome(page: Page) {
 	);
 }
 
-
-async function openWorkspace(page: Page, pair: DraftChatPair) {
-	await installContinuationGate(page);
-	await page.goto(pair.webUrl);
-	await page
-		.getByRole("button", { name: "Agent connections", exact: true })
-		.click();
+async function openConnections(page: Page) {
+	const trigger = page.getByRole("button", {
+		name: "Max Mustermann, agent connections",
+	});
+	if ((await trigger.getAttribute("data-open")) === null) {
+		await trigger.click();
+	}
 	const grant = page.getByRole("checkbox", {
 		name: "Allow agents to edit the draft",
 	});
 	await expect(grant).toBeEnabled();
+	return grant;
+}
+
+async function openWorkspace(page: Page, pair: DraftChatPair) {
+	await installContinuationGate(page);
+	await page.goto(pair.webUrl);
+	const grant = await openConnections(page);
 	await grant.check();
 	return grant;
 }
@@ -174,9 +181,8 @@ test("approving one proposed draft runs it exactly once and continues automatica
 	await expect(page.getByRole("textbox", { name: "Ask Agent" })).toHaveValue(
 		pair.draftValue,
 	);
-	await expect(
-		page.getByRole("checkbox", { name: "Allow agents to edit the draft" }),
-	).toBeChecked();
+	const reopened = await openConnections(page);
+	await expect(reopened).toBeChecked();
 
 	expect(pair.posts).toHaveLength(2);
 	expect(pair.providerRuns).toHaveLength(2);
@@ -278,9 +284,8 @@ test("Stop during the approval dialog closes it without a continuation request o
 	const first = await pair.waitForProviderRun(1);
 	await first.finished;
 	await expect(footerStatus(page)).toHaveText("Response stopped");
-	await expect(
-		page.getByRole("checkbox", { name: "Allow agents to edit the draft" }),
-	).toBeChecked();
+	const reopened = await openConnections(page);
+	await expect(reopened).toBeChecked();
 	await expect(page.getByRole("textbox", { name: "Ask Agent" })).toHaveValue("");
 	await expect(draftOutcome(page)).toHaveCount(0);
 
@@ -313,15 +318,13 @@ test("revoking the grant while approval waits cancels the edit and the continuat
 }) => {
 	const dialog = await reachApproval(page, pair);
 
-	const grant = page.getByRole("checkbox", {
-		name: "Allow agents to edit the draft",
-	});
 	await dialog
 		.getByRole("button", { name: "Revoke draft access", exact: true })
 		.click();
 
 	await expect(dialog).toBeHidden();
-	await expect(grant).not.toBeChecked();
+	const reopened = await openConnections(page);
+	await expect(reopened).not.toBeChecked();
 	const second = await pair.waitForProviderRun(2);
 	await second.finished;
 	await expect(footerStatus(page)).toHaveText("");

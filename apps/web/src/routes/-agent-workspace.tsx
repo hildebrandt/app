@@ -8,7 +8,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "@ui-sdk/react/alert-dialog";
-import { Avatar, AvatarFallback } from "@ui-sdk/react/avatar";
+import { Button } from "@ui-sdk/react/button";
 import { Field } from "@ui-sdk/react/field";
 import { createParts } from "@ui-sdk/react/primitive";
 import { Textarea } from "@ui-sdk/react/textarea";
@@ -123,7 +123,7 @@ export const AgentWorkspace = () => {
 
   useEffect(() => {
     const content = contentRef.current;
-    if (content !== null) {
+    if (content !== null && messages.length > 0) {
       content.scrollTop = content.scrollHeight;
     }
   }, [chat.busy, messages]);
@@ -184,18 +184,17 @@ export const AgentWorkspace = () => {
           {NAV_ITEMS.map((item) => {
             const isCurrent = item.label === "Agent";
             return (
-              <button
+              <Button
                 aria-current={isCurrent ? "page" : undefined}
-                aria-disabled={!isCurrent || !hydrated}
                 className={styles.navItem}
-                data-kind-button="secondary"
+                disabled={!isCurrent || !hydrated}
+                focusableWhenDisabled
                 key={item.label}
-                onClick={isCurrent && hydrated ? focusComposer : undefined}
-                type="button"
+                onClick={isCurrent ? focusComposer : undefined}
               >
                 <Icon name={item.icon} size={16} />
                 <span className={styles.navLabel}>{item.label}</span>
-              </button>
+              </Button>
             );
           })}
         </nav>
@@ -208,34 +207,25 @@ export const AgentWorkspace = () => {
                 A new feature will be explained here
               </NoticeDescription>
               <NoticeActions>
-                <button
+                <Button
                   aria-label="Dismiss announcement"
                   className={styles.noticeDismiss}
-                  data-kind-icon-button=""
                   disabled={!hydrated}
                   onClick={dismissAnnouncement}
-                  type="button"
                 >
                   <Icon name="close" size={13} />
-                </button>
+                </Button>
               </NoticeActions>
             </NoticeRoot>
           </section>
         ) : null}
 
-        <div className={styles.profile}>
-          <Avatar aria-hidden="true" className={styles.avatar}>
-            <AvatarFallback>MM</AvatarFallback>
-          </Avatar>
-          <span className={styles.profileText}>
-            <span className={styles.profileName}>Max Mustermann</span>
-          </span>
-          <Icon
-            className={styles.profileChevron}
-            name="chevron-down"
-            size={14}
-          />
-        </div>
+        <AgentConnections
+          control={inputRef}
+          draft={currentDraft}
+          hydrated={hydrated}
+          tools={draftTools}
+        />
       </aside>
 
       <main className={styles.mainColumn}>
@@ -252,7 +242,10 @@ export const AgentWorkspace = () => {
           </header>
 
           <div className={styles.content} ref={contentRef}>
-            <div className={styles.starter}>
+            <div
+              className={styles.starter}
+              data-has-messages={chatMessages.length > 0}
+            >
               {chatMessages.length > 0 ? (
                 <ol aria-label="Chat messages" className={styles.transcript}>
                   {chatMessages.map((message) => (
@@ -275,14 +268,89 @@ export const AgentWorkspace = () => {
                 </ol>
               ) : null}
 
-              <AgentConnections
-                control={inputRef}
-                draft={currentDraft}
-                hydrated={hydrated}
-                tools={draftTools}
-              />
+              <div className={styles.composerDock}>
+                <composerParts.Root
+                  agentConfirm={false}
+                  aria-busy={chat.busy}
+                  aria-label="Start a new chat"
+                  className={styles.composer}
+                  onSubmit={submitDraft}
+                  value={{ text: draft, tokens: [], attachments: [] }}
+                >
+                  <Field className={styles.promptField} name="prompt">
+                    <Textarea
+                      aria-label="Ask Agent"
+                      className={styles.textarea}
+                      onValueChange={(value, { source }) =>
+                        updateDraft(value, source)
+                      }
+                      placeholder="Ask anything"
+                      readOnly={!hydrated}
+                      ref={inputRef}
+                      rows={2}
+                      value={draft}
+                    />
+                  </Field>
 
-              {showExamples ? (
+                  <div className={styles.composerActions}>
+                    <span aria-hidden="true" className={styles.composerHint}>
+                      <Icon name="plus" size={15} />
+                    </span>
+                    {chat.responding && !approval ? (
+                      <Button
+                        className={styles.stopButton}
+                        data-kind-button="secondary"
+                        onClick={stopResponse}
+                      >
+                        Stop
+                      </Button>
+                    ) : null}
+                    <composerParts.Submit
+                      aria-disabled={!canSend}
+                      aria-label="Submit prompt"
+                      className={styles.submitButton}
+                      data-agent-confirm="Sends the message as you"
+                    >
+                      <Icon name="arrow-up" size={16} />
+                    </composerParts.Submit>
+                  </div>
+                </composerParts.Root>
+
+                {errorMessage ? (
+                  <NoticeRoot
+                    className={`${styles.notice} ${styles.errorNotice}`}
+                    label="Chat error"
+                    variant="error"
+                  >
+                    <NoticeTitle />
+                    <NoticeDescription>
+                      <p role="alert">{errorMessage}</p>
+                    </NoticeDescription>
+                    {chat.retry ? (
+                      <NoticeActions className={styles.errorActions}>
+                        <Button
+                          className={styles.retryButton}
+                          data-kind-button="secondary"
+                          onClick={retryResponse}
+                        >
+                          Retry
+                        </Button>
+                      </NoticeActions>
+                    ) : null}
+                  </NoticeRoot>
+                ) : null}
+
+                {actionResult ? (
+                  <p className={styles.draftOutcome} role="status">
+                    <Status
+                      label={DRAFT_OUTCOMES[actionResult.outcome]}
+                      status={OUTCOME_STATUS[actionResult.outcome]}
+                    />
+                  </p>
+                ) : null}
+              </div>
+
+              {showExamples && chatMessages.length === 0 ? (
                 <section
                   aria-labelledby="examples-title"
                   className={styles.examples}
@@ -291,16 +359,14 @@ export const AgentWorkspace = () => {
                     <p className={styles.examplesTitle} id="examples-title">
                       Get started with some examples
                     </p>
-                    <button
+                    <Button
                       aria-label="Dismiss examples"
                       className={styles.examplesDismiss}
-                      data-kind-icon-button=""
                       disabled={!hydrated}
                       onClick={dismissExamples}
-                      type="button"
                     >
                       <Icon name="close" size={14} />
-                    </button>
+                    </Button>
                   </div>
                   <Suggestion
                     className={styles.suggestions}
@@ -354,94 +420,13 @@ export const AgentWorkspace = () => {
               ) : null}
             </div>
           </div>
-
-          <div className={styles.composerDock}>
-            <composerParts.Root
-              agentConfirm={false}
-              aria-label="Start a new chat"
-              aria-busy={chat.busy}
-              className={styles.composer}
-              onSubmit={submitDraft}
-              value={{ text: draft, tokens: [], attachments: [] }}
-            >
-              <Field className={styles.promptField} name="prompt">
-                <Textarea
-                  aria-label="Ask Agent"
-                  className={styles.textarea}
-                  onValueChange={(value, { source }) =>
-                    updateDraft(value, source)
-                  }
-                  placeholder="Ask anything"
-                  readOnly={!hydrated}
-                  ref={inputRef}
-                  rows={2}
-                  value={draft}
-                />
-              </Field>
-
-              <div className={styles.composerActions}>
-                <span aria-hidden="true" className={styles.composerHint}>
-                  <Icon name="plus" size={15} />
-                </span>
-                {chat.responding && !approval ? (
-                  <button
-                    data-kind-button="secondary"
-                    className={styles.stopButton}
-                    onClick={stopResponse}
-                    type="button"
-                  >
-                    Stop
-                  </button>
-                ) : null}
-                <composerParts.Submit
-                  aria-disabled={!canSend}
-                  aria-label="Submit prompt"
-                  className={styles.submitButton}
-                  data-agent-confirm="Sends the message as you"
-                  data-kind-icon-button="primary"
-                >
-                  <Icon name="arrow-up" size={16} />
-                </composerParts.Submit>
-              </div>
-            </composerParts.Root>
-
-            {errorMessage ? (
-              <NoticeRoot
-                className={`${styles.notice} ${styles.errorNotice}`}
-                label="Chat error"
-                variant="error"
-              >
-                <NoticeTitle />
-                <NoticeDescription>
-                  <p role="alert">{errorMessage}</p>
-                </NoticeDescription>
-                {chat.retry ? (
-                  <NoticeActions className={styles.errorActions}>
-                    <button
-                      data-kind-button="secondary"
-                      className={styles.retryButton}
-                      onClick={retryResponse}
-                      type="button"
-                    >
-                      Retry
-                    </button>
-                  </NoticeActions>
-                ) : null}
-              </NoticeRoot>
-            ) : null}
-
-            {actionResult ? (
-              <p className={styles.draftOutcome} role="status">
-                <Status
-                  label={DRAFT_OUTCOMES[actionResult.outcome]}
-                  status={OUTCOME_STATUS[actionResult.outcome]}
-                />
-              </p>
-            ) : null}
-          </div>
-        </section >
+        </section>
 
         <footer className={styles.statusBar}>
+          <span className={styles.statusLabel}>
+            <Icon name="agent" size={14} />
+            Agent
+          </span>
           <span className={styles.statusMessage} role="status">
             {chat.responding || chat.stopped ? (
               <Status
@@ -455,12 +440,8 @@ export const AgentWorkspace = () => {
           <span aria-hidden="true" className={styles.statusClock}>
             <Icon name="clock" size={14} />
           </span>
-          <span className={styles.statusLabel}>
-            <Icon name="agent" size={14} />
-            Agent
-          </span>
         </footer>
-      </main >
+      </main>
 
       <AlertDialog
         open={approval !== null}

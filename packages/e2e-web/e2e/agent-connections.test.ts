@@ -236,17 +236,26 @@ const startBridge = (origin: string): BridgeSession => {
   return { call, request, stop, waitFor };
 };
 
-const openAgentConnections = async (page: Page, value: string) => {
-  await page.goto("/");
-  const draft = page.getByRole("textbox", { name: "Ask Agent" });
-  await draft.fill(value);
-  await page
-    .getByRole("button", { name: "Agent connections", exact: true })
-    .click();
+const connectionsTrigger = (page: Page) =>
+  page.getByRole("button", { name: "Max Mustermann, agent connections" });
+
+const openConnections = async (page: Page) => {
+  const trigger = connectionsTrigger(page);
+  if ((await trigger.getAttribute("data-open")) === null) {
+    await trigger.click();
+  }
   const grant = page.getByRole("checkbox", {
     name: "Allow agents to edit the draft",
   });
   await expect(grant).toBeEnabled();
+  return grant;
+};
+
+const openAgentConnections = async (page: Page, value: string) => {
+  await page.goto("/");
+  const draft = page.getByRole("textbox", { name: "Ask Agent" });
+  await draft.fill(value);
+  const grant = await openConnections(page);
   return { draft, grant };
 };
 
@@ -287,16 +296,7 @@ test("the external bridge and native WebMCP share draft access and undo", async 
   });
   await cdp.send("WebMCP.enable");
 
-  await page.goto("/");
-  const draft = page.getByRole("textbox", { name: "Ask Agent" });
-  await draft.fill(initialDraft);
-  await page
-    .getByRole("button", { name: "Agent connections", exact: true })
-    .click();
-  const grant = page.getByRole("checkbox", {
-    name: "Allow agents to edit the draft",
-  });
-  await expect(grant).toBeEnabled();
+  const { draft, grant } = await openAgentConnections(page, initialDraft);
   await expect(grant).not.toBeChecked();
   await expect(page.getByText("WebMCP ready", { exact: true })).toBeVisible();
 
@@ -455,6 +455,7 @@ test("the external bridge and native WebMCP share draft access and undo", async 
 
     expect(await bridge.call(setName, setArguments)).toStrictEqual(changed);
     await expect(draft).toHaveValue(agentDraft);
+    await openConnections(page);
     await grant.uncheck();
     expect(await bridge.call(undoName, {})).toStrictEqual(denied);
     await expect(draft).toHaveValue(agentDraft);

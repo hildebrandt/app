@@ -48,8 +48,13 @@
   font-display: swap;
 }
 
+/*
+ * The theme follows the operating system. Every color token carries a
+ * `light-dark()` pair, and `color-scheme` makes the browser resolve them and
+ * paint native controls (carets, scrollbars, form widgets) to match.
+ */
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
   --font-display:
     "Manrope", "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto,
     sans-serif;
@@ -57,47 +62,54 @@
     "Inter", "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto,
     sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --background: #010102;
-  --foreground: #f7f8f8;
+  --background: light-dark(#f7f8f8, #09090a);
+  --foreground: light-dark(#141519, #e3e4e6);
 
   /* KindUI theme: near-black canvas, charcoal surfaces and one restrained accent. */
-  --kind-color-fg: #f7f8f8;
-  --kind-color-muted: #8a8f98;
-  --kind-color-canvas: #010102;
-  --kind-color-surface: #0f1011;
-  --kind-color-raised: #141516;
-  --kind-color-hover: rgb(255 255 255 / 0.055);
-  --kind-color-pressed: rgb(255 255 255 / 0.09);
-  --kind-color-selected: rgb(94 106 210 / 0.16);
-  --kind-color-current: #191a1b;
-  --kind-color-bubble: #18191a;
-  --kind-color-scrim: rgb(0 0 0 / 0.74);
-  --kind-color-hairline: #23252a;
-  --kind-color-border: #34343a;
-  --kind-color-ring: #5e69d1;
-  --kind-color-focus: #5e69d1;
-  --kind-color-shadow: #000000;
-  --kind-color-primary: #5e6ad2;
-  --kind-color-primary-hover: #828fff;
+  --kind-color-fg: var(--foreground);
+  --kind-color-muted: light-dark(#5f646e, #92939a);
+  --kind-color-canvas: var(--background);
+  --kind-color-surface: light-dark(#ffffff, #101011);
+  --kind-color-raised: light-dark(#ffffff, #161617);
+  --kind-color-hover: light-dark(rgb(20 21 25 / 0.055), rgb(255 255 255 / 0.055));
+  --kind-color-pressed: light-dark(rgb(20 21 25 / 0.09), rgb(255 255 255 / 0.09));
+  --kind-color-selected: light-dark(rgb(79 91 206 / 0.14), rgb(94 106 210 / 0.16));
+  --kind-color-current: light-dark(#e9eaed, #222224);
+  --kind-color-bubble: light-dark(#f0f1f4, #18191a);
+  --kind-color-scrim: light-dark(rgb(20 23 31 / 0.32), rgb(0 0 0 / 0.74));
+  --kind-color-hairline: light-dark(#e2e4e9, #232325);
+  --kind-color-border: light-dark(#cdd1d9, #34343a);
+  --kind-color-ring: light-dark(#4f5bce, #5e69d1);
+  --kind-color-focus: light-dark(#4f5bce, #5e69d1);
+  --kind-color-shadow: light-dark(#12141a, #000000);
+  --kind-color-primary: light-dark(#4f5bce, #5e6ad2);
+  --kind-color-primary-hover: light-dark(#3f4bb8, #828fff);
   --kind-color-primary-fg: #ffffff;
-  --kind-color-accent: #5e6ad2;
-  --kind-color-accent-hover: #828fff;
+  --kind-color-accent: light-dark(#4f5bce, #5e6ad2);
+  --kind-color-accent-hover: light-dark(#3f4bb8, #828fff);
   --kind-color-on-accent: #ffffff;
   --kind-color-on-status: #ffffff;
-  --kind-color-on-warning: #010102;
-  --kind-color-success: #27a644;
-  --kind-color-warning: #f5a623;
-  --kind-color-danger: #e5484d;
+  --kind-color-on-warning: light-dark(#ffffff, #010102);
+  --kind-color-success: light-dark(#1f8a3b, #27a644);
+  --kind-color-warning: light-dark(#a86400, #f5a623);
+  --kind-color-danger: light-dark(#c92f36, #e5484d);
 
   --kind-font-sans: var(--font-text);
   --kind-font-mono: var(--font-mono);
   --kind-radius: 8px;
+  --kind-composer-radius: 12px;
+  --kind-duration-fast: 130ms;
+  --kind-ease-in-out: ease-in-out;
   --kind-focus-ring-width: 2px;
   --kind-focus-ring: 2px solid var(--kind-color-focus);
   --kind-focus-offset: 2px;
   --kind-shadow-control: none;
-  --kind-shadow-popover: 0 0 0 1px var(--kind-color-hairline);
-  --kind-shadow-dialog: 0 0 0 1px var(--kind-color-border);
+  --kind-shadow-popover:
+    0 0 0 1px var(--kind-color-hairline),
+    0 16px 40px -16px color-mix(in oklab, var(--kind-color-shadow) 45%, transparent);
+  --kind-shadow-dialog:
+    0 0 0 1px var(--kind-color-border),
+    0 24px 64px -24px color-mix(in oklab, var(--kind-color-shadow) 45%, transparent);
   --kind-shadow-composer: 0 0 0 1px var(--kind-color-hairline);
 }
 
@@ -167,20 +179,31 @@ a {
   color: var(--kind-color-fg);
 }
 
-/* Keyboard focus is visible on controls. Text fields keep the caret as their only focus cue. */
+/* Keyboard focus is visible on controls, including text fields and the composer. */
 :where(button, a, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--kind-color-focus);
   outline-offset: 2px;
 }
 
-:where(input:not([type="checkbox"]):not([type="radio"]),
-  textarea,
-  [contenteditable="true"]):focus-visible {
-  outline: none;
+:where(input, textarea, [contenteditable="true"]):focus-visible {
+  outline: 2px solid var(--kind-color-focus);
+  outline-offset: 1px;
 }
 
 input[type="checkbox"]:focus-visible,
 input[type="radio"]:focus-visible {
   outline: 2px solid var(--kind-color-focus);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

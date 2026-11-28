@@ -1,10 +1,12 @@
-import {
-  Collapsible,
-  CollapsiblePanel,
-  CollapsibleTrigger,
-} from "@ui-sdk/react/collapsible";
+import { Avatar, AvatarFallback } from "@ui-sdk/react/avatar";
 import { Field } from "@ui-sdk/react/field";
 import { Input } from "@ui-sdk/react/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@ui-sdk/react/popover";
 import { Check } from "lucide-react";
 import {
   type FormEvent,
@@ -144,16 +146,33 @@ export const AgentConnections = ({
     bridgeStatus === "connected" || bridgeStatus === "connecting";
 
   return (
-    <Collapsible className={styles.connections} disabled={!hydrated}>
-      <CollapsibleTrigger
-        className={styles.connectionsTrigger}
-        data-kind-trigger=""
+    <Popover>
+      <PopoverTrigger
+        aria-label="Max Mustermann, agent connections"
+        className={styles.profile}
+        disabled={!hydrated}
       >
-        <Icon name="agent" size={15} />
-        Agent connections
-        <Icon name="chevron-down" size={14} />
-      </CollapsibleTrigger>
-      <CollapsiblePanel keepMounted>
+        <Avatar aria-hidden="true" className={styles.avatar}>
+          <AvatarFallback>MM</AvatarFallback>
+        </Avatar>
+        <span className={styles.profileText}>
+          <span className={styles.profileName}>Max Mustermann</span>
+        </span>
+        <Icon
+          className={styles.profileChevron}
+          name="chevron-down"
+          size={14}
+        />
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className={styles.connections}
+        side="top"
+        sideOffset={8}
+      >
+        <PopoverTitle className={styles.connectionsHeading}>
+          Agent connections
+        </PopoverTitle>
         <div className={styles.connectionBody}>
           <label className={styles.connectionGrant}>
             <KindCheckbox
@@ -216,7 +235,7 @@ export const AgentConnections = ({
             {webMcpStatus}
           </p>
         </div>
-      </CollapsiblePanel>
-    </Collapsible>
+      </PopoverContent>
+    </Popover>
   );
 };
